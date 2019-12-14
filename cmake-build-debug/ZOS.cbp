@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="ZOS"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZOS">
+				<Option output="/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/ZOS" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 ZOS"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ZOS/fast">
+				<Option output="/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/ZOS" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 ZOS/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/bitmap.c">
+			<Option target="ZOS"/>
+		</Unit>
+		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/commands.c">
+			<Option target="ZOS"/>
+		</Unit>
+		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/commands.h">
+			<Option target="ZOS"/>
+		</Unit>
+		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/inode_blocks.c">
+			<Option target="ZOS"/>
+		</Unit>
+		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/main.c">
+			<Option target="ZOS"/>
+		</Unit>
+		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/main.h">
+			<Option target="ZOS"/>
+		</Unit>
+		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/superblock.c">
+			<Option target="ZOS"/>
+		</Unit>
+		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/vfs.c">
+			<Option target="ZOS"/>
+		</Unit>
+		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
