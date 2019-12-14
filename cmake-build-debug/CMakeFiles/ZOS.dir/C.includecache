@@ -22,11 +22,13 @@ main.h
 main.h
 /home/janelle/Documents/Repository/kiv-zos/main.h
 
+/home/janelle/Documents/Repository/kiv-zos/data_blocks.c
+main.h
+/home/janelle/Documents/Repository/kiv-zos/main.h
+
 /home/janelle/Documents/Repository/kiv-zos/inode_blocks.c
 main.h
 /home/janelle/Documents/Repository/kiv-zos/main.h
-stdlib.h
--
 
 /home/janelle/Documents/Repository/kiv-zos/main.c
 stdio.h
@@ -42,6 +44,10 @@ commands.h
 stdint.h
 -
 stdio.h
+-
+stdlib.h
+-
+string.h
 -
 
 /home/janelle/Documents/Repository/kiv-zos/superblock.c

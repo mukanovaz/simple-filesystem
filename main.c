@@ -137,3 +137,15 @@ int compare_two_string(char *string1, char *string2) {
         return 0;
     }
 }
+
+int get_folder_count(char *str) {
+    char path[strlen(str)];
+    strcpy(path, str);
+    char *ttok = strtok(path, "/");
+    int folders_count = 0;
+    while(ttok != NULL) {
+        ttok = strtok(NULL, "/");
+        folders_count++;
+    }
+    return folders_count;
+}

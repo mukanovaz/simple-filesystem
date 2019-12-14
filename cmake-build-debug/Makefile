@@ -177,6 +177,33 @@ commands.c.s:
 	$(MAKE) -f CMakeFiles/ZOS.dir/build.make CMakeFiles/ZOS.dir/commands.c.s
 .PHONY : commands.c.s
 
+data_blocks.o: data_blocks.c.o
+
+.PHONY : data_blocks.o
+
+# target to build an object file
+data_blocks.c.o:
+	$(MAKE) -f CMakeFiles/ZOS.dir/build.make CMakeFiles/ZOS.dir/data_blocks.c.o
+.PHONY : data_blocks.c.o
+
+data_blocks.i: data_blocks.c.i
+
+.PHONY : data_blocks.i
+
+# target to preprocess a source file
+data_blocks.c.i:
+	$(MAKE) -f CMakeFiles/ZOS.dir/build.make CMakeFiles/ZOS.dir/data_blocks.c.i
+.PHONY : data_blocks.c.i
+
+data_blocks.s: data_blocks.c.s
+
+.PHONY : data_blocks.s
+
+# target to generate assembly for a file
+data_blocks.c.s:
+	$(MAKE) -f CMakeFiles/ZOS.dir/build.make CMakeFiles/ZOS.dir/data_blocks.c.s
+.PHONY : data_blocks.c.s
+
 inode_blocks.o: inode_blocks.c.o
 
 .PHONY : inode_blocks.o
@@ -300,6 +327,9 @@ help:
 	@echo "... commands.o"
 	@echo "... commands.i"
 	@echo "... commands.s"
+	@echo "... data_blocks.o"
+	@echo "... data_blocks.i"
+	@echo "... data_blocks.s"
 	@echo "... inode_blocks.o"
 	@echo "... inode_blocks.i"
 	@echo "... inode_blocks.s"

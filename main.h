@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define FS_TEMP_FILE "inode.dat"
 #define SPLITTER " "
@@ -37,15 +39,14 @@
 #define ROOT_NAME "root"
 
 // ================================== [CONSTANT] ==================================
-#define MAX_INODE_COUNT = 100
-#define INODES_BLOCK_SIZE_RATIO 0.1
 #define DISK_SIZE 102400
-#define CLUSTER_SIZE 4096
-#define MAX_DIRECT_LINKS 5
+#define ONE_CLUSTER_SIZE 4096
+#define CLUSTER_COUNT 23
 #define MAX_NAME_LEN 12
 #define DIRECTORY 1
-#define MAX_DIR_COUNT 5
-
+#define MAX_DIR_COUNT 256
+#define MAX_INODE_COUNT 100
+#define MAX_DIRECT_LINKS 5
 
 
 // ================================== [FILESYSTEM] ==================================
@@ -56,20 +57,20 @@
 #define NE "NOT EMPTY"
 #define CCFILE "CANNOT CREATE FILE"
 
-//int MAX_FILES_IN_DIR = CLUSTER_SIZE / sizeof(int32_t);
-
 typedef struct superblock SUPERBLOCK;
 typedef struct pseudo_inode INODE;
-typedef struct my_inode_blocks INODE_BLOCK;
+typedef struct my_inode_array INODE_BLOCK;
 typedef struct my_bitmap BITMAP;
 typedef struct my_vfs VFS;
 typedef struct directory_item DIR_ITEM;
 typedef struct directory DIR;
+typedef struct data_blocks DATA_BLOCKS;
 
 struct my_vfs {
     SUPERBLOCK *superblock;
     INODE_BLOCK *inode_blocks;
     BITMAP *bitmap;
+    DATA_BLOCKS *data_blocks;
 
     char *actual_path;
     char *filename;
@@ -87,9 +88,9 @@ struct superblock {
     int32_t data_start_address;     //adresa pocatku datovych bloku
 };
 
-struct my_inode_blocks {
+struct my_inode_array {
     int32_t size;
-    INODE **items;
+    INODE *items[MAX_INODE_COUNT];
 };
 
 struct pseudo_inode {
@@ -105,10 +106,16 @@ struct pseudo_inode {
 
 struct my_bitmap {
     int32_t length;
-    unsigned char *data;
+    int data[CLUSTER_COUNT];
+};
+
+struct data_blocks {
+    int32_t length; // const
+    DIR **directory;
 };
 
 struct directory {
+    int block_id;
     int32_t size;
     DIR_ITEM **files;
 };
@@ -129,6 +136,7 @@ struct the_fragment_temp {
 void hello();
 int compare_two_string(char *string1, char *string2);
 int getLine (char *prmpt, char *buff, size_t sz);
+int get_folder_count(char *str);
 
 // BITMAP
 int32_t get_one_free_cluster(BITMAP **bitmap);
@@ -138,7 +146,7 @@ int bitmap_contains_free_cluster(BITMAP *bitmap);
 int used_clusters(BITMAP *bitmap);
 void bitmap_info(BITMAP *bitmap);
 struct the_fragment_temp *find_free_cluster(BITMAP **bitmap, int needed_count);
-
+int32_t set_bitmap_on_index (BITMAP **bitmap, int index);
 
 // VIRTUAL FILESYSTEM
 void vfs_init(VFS **vfs, char *filename, size_t disk_size);
@@ -155,9 +163,16 @@ INODE *get_inode_from_path(VFS *vfs, char *tok);
 void fill_data_block_directory(VFS **vfs, int cluster_count, char *name);
 void fill_data_block_file(VFS **vfs, int cluster_count);
 void dir_init(DIR **dir, char *name, int32_t node_id);
+void init_root_directory(VFS **vfs, int node_id);
+void add_folder_to_structure(VFS **vfs, int node_id, char *dir_name, int32_t cluster_id,  int directory_size) ;
+INODE *find_directory (VFS **vfs, char *dir_name);
 
 void fwrite_inode_block(VFS **vfs);
 void fwrite_mft_item(VFS **vfs, int node_id);
 
+// DATABLOCKS
+void data_blocks_init (DATA_BLOCKS **data_blocks, int32_t count);
+int directory_exist (VFS **vfs, int32_t cluster_id, char *dir_name);
 
+void ls (VFS **vfs);
 #endif //ZOS_MAIN_H

@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/ZOS.dir/bitmap.c.o"
   "CMakeFiles/ZOS.dir/commands.c.o"
+  "CMakeFiles/ZOS.dir/data_blocks.c.o"
   "CMakeFiles/ZOS.dir/inode_blocks.c.o"
   "CMakeFiles/ZOS.dir/main.c.o"
   "CMakeFiles/ZOS.dir/superblock.c.o"

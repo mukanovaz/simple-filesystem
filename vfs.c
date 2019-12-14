@@ -10,11 +10,11 @@ void vfs_init(VFS **vfs, char *filename, size_t disk_size) {
     (*vfs) = calloc(1, sizeof(VFS));
     (*vfs) -> filename = calloc(MAX_NAME_LEN, sizeof(char));
 
-    // TODO: peredelat'
     strcpy((*vfs) -> filename, filename);
 
     // Actual path
     (*vfs) -> actual_path = calloc(PATH_MAX, sizeof(char));
+    strcpy((*vfs) -> actual_path, "/root");
 
     // Open .dat file
     FILE *vfs_file = fopen(filename, "r+");
@@ -25,13 +25,18 @@ void vfs_init(VFS **vfs, char *filename, size_t disk_size) {
 
         // Create Superblock
         SUPERBLOCK *superblock;
-        superblock_init(&superblock, disk_size, CLUSTER_SIZE);
+        superblock_init(&superblock, disk_size, ONE_CLUSTER_SIZE);
         (*vfs) -> superblock = superblock;
 
         // Create bitmap
         BITMAP *bitmap;
         bitmap_init(&bitmap, (*vfs) -> superblock -> cluster_count);
         (*vfs) -> bitmap = bitmap;
+
+        // Create Data blocks
+        DATA_BLOCKS *dataBlocks;
+        data_blocks_init(&dataBlocks, (*vfs) -> superblock -> cluster_count);
+        (*vfs) -> data_blocks = dataBlocks;
 
         // Create inode blocks
         inode_blocks_init(vfs);

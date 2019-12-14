@@ -1,80 +1,110 @@
 #include "main.h"
-#include <stdlib.h>
 
 void inode_blocks_init(VFS **vfs) {
-    (*vfs) -> inode_blocks = calloc(1, sizeof(INODE));
-    (*vfs) -> inode_blocks -> size = 0;
-    (*vfs) -> inode_blocks -> items = calloc((*vfs) -> inode_blocks -> size, sizeof(INODE));
+//    (*vfs) -> inode_blocks = calloc(1, sizeof(INODE));
+//    (*vfs) -> inode_blocks -> size = 0;
+//    (*vfs) -> inode_blocks -> items = calloc((*vfs) -> inode_blocks -> size, sizeof(INODE));
+//
+//    // Init root directory
+//    init_root_directory(vfs, (*vfs) -> inode_blocks -> size);
+}
 
-    // Init root directory
-    inode_init(vfs, (*vfs) -> inode_blocks -> size, "/", DIRECTORY, DIRECTORY);
+void init_root_directory(VFS **vfs, int node_id) {
+//    // Check if exist free Data block
+//    if (bitmap_contains_free_cluster((*vfs) -> bitmap) == 1) {
+//        printf("ERROR: Out of memory. Cannot create a file\n");
+//        return;
+//    }
+//    (*vfs) -> inode_blocks -> items = realloc((*vfs) -> inode_blocks -> items, ((*vfs) -> inode_blocks -> size + 1) *
+//                                                                               sizeof(INODE));
+//    (*vfs) -> inode_blocks -> items[node_id] = calloc(1, sizeof(INODE));
+//    (*vfs) -> inode_blocks -> items[node_id] -> nodeid = node_id;
+//    (*vfs) -> inode_blocks -> items[node_id] -> isDirectory = DIRECTORY;
+//    (*vfs) -> inode_blocks -> items[node_id] -> references = 1;
+//    (*vfs) -> inode_blocks -> items[node_id] -> file_size = DIRECTORY;
+//
+//    // Write to data block
+//    int32_t cluster_id = get_one_free_cluster(&(*vfs) -> bitmap);
+//    add_folder_to_structure(vfs, node_id, "/root", cluster_id, 1);
+//    set_bitmap_on_index(&(*vfs)-> bitmap, cluster_id);
+//
+//    // Add direct links
+//    int32_t cluster_address;
+//    cluster_address = (*vfs) -> superblock -> data_start_address + (cluster_id * ONE_CLUSTER_SIZE);
+//    (*vfs) -> inode_blocks -> items[node_id] -> direct[0] = cluster_address;
+//    (*vfs) -> inode_blocks -> items[node_id] -> cluster_count = 1;
+//    (*vfs) -> inode_blocks -> size++;
+}
+
+void add_folder_to_structure(VFS **vfs, int node_id, char *dir_name, int32_t cluster_id,  int directory_size) {
+    if (directory_size > MAX_DIR_COUNT) {
+        printf("ERROR: Out of memory");
+        return;
+    }
+    (*vfs) -> data_blocks -> directory[cluster_id] = malloc(sizeof(DIR_ITEM));
+    (*vfs) -> data_blocks -> directory[cluster_id] -> block_id = cluster_id;
+    (*vfs) -> data_blocks -> directory[cluster_id] -> size = directory_size;
+    (*vfs) -> data_blocks -> directory[cluster_id] -> files = calloc((*vfs) -> data_blocks -> directory[cluster_id] -> size, sizeof(DIR_ITEM));
+    // Fill directory item
+    (*vfs) -> data_blocks -> directory[cluster_id] -> files[0] = malloc(sizeof(DIR_ITEM));
+    (*vfs) -> data_blocks -> directory[cluster_id] -> files[0] -> inode = node_id;
+    strcpy((*vfs) -> data_blocks -> directory[cluster_id] -> files[0] -> item_name, dir_name);
 }
 
 void inode_init(VFS **vfs, int node_id, char *name, int isDirectory, int item_size) {
-    if (bitmap_contains_free_cluster((*vfs) -> bitmap) == 1) {
-        printf("ERROR: Out of memory. Cannot create a file\n");
-        return;
-    }
+//    if (bitmap_contains_free_cluster((*vfs) -> bitmap) == 1) {
+//        printf("ERROR: Out of memory. Cannot create a file\n");
+//        return;
+//    }
+//
+//    (*vfs) -> inode_blocks -> items = realloc((*vfs) -> inode_blocks -> items, ((*vfs) -> inode_blocks -> size + 1) *
+//            sizeof(INODE));
+//
+//    (*vfs) -> inode_blocks -> items[node_id] = calloc(1, sizeof(INODE));
+//    (*vfs) -> inode_blocks -> items[node_id] -> nodeid = node_id;
+//    (*vfs) -> inode_blocks -> items[node_id] -> isDirectory = isDirectory;
+//    (*vfs) -> inode_blocks -> items[node_id] -> references = 1;
+//    (*vfs) -> inode_blocks -> items[node_id] -> file_size = item_size;
+//
+//    // Fill data blocks
+//    int cluster_count = 1;
+//    if (item_size !=0) {
+//        cluster_count = item_size / ONE_CLUSTER_SIZE;
+//        if ((item_size % ONE_CLUSTER_SIZE) != 0) cluster_count++;
+//    }
+//
+//    if (isDirectory == 1) {
+//        fill_data_block_directory(vfs, node_id, name);
+//    } else {
+//        fill_data_block_file(vfs, cluster_count);
+//    }
+}
 
-    // TODO: proverit
-    (*vfs) -> inode_blocks -> items = realloc((*vfs) -> inode_blocks -> items, ((*vfs) -> inode_blocks -> size + 1) *
-            sizeof(INODE));
+void fill_data_block_directory(VFS **vfs, int node_id, char *name){
+    int folder_count;
+    folder_count = get_folder_count((*vfs) -> actual_path);
 
-    (*vfs) -> inode_blocks -> items[(*vfs) -> inode_blocks -> size] = calloc(1, sizeof(INODE));
-    (*vfs) -> inode_blocks -> items[(*vfs) -> inode_blocks -> size] -> nodeid = node_id;
-    (*vfs) -> inode_blocks -> items[(*vfs) -> inode_blocks -> size] -> isDirectory = isDirectory;
-    (*vfs) -> inode_blocks -> items[(*vfs) -> inode_blocks -> size] -> references = 1;
-    (*vfs) -> inode_blocks -> items[(*vfs) -> inode_blocks -> size] -> file_size = item_size;
-
-    // Fill data blocks
-    int cluster_count = 1;
-    if (item_size !=0) {
-        cluster_count = item_size / CLUSTER_SIZE;
-        if ((item_size % CLUSTER_SIZE) != 0) cluster_count++;
-    }
-
-    if (isDirectory == 1) {
-        fill_data_block_directory(vfs, cluster_count, name);
+    if (folder_count == 1) {        // ROOT
+        // Add to root structure new folder
+        int directory_size =  (*vfs) -> data_blocks -> directory[0] -> size + 1;
+        add_folder_to_structure(vfs, node_id, "/root", 0, directory_size);
+        // Create new data block
+        int32_t cluster_id = get_one_free_cluster(&(*vfs) -> bitmap);
+        add_folder_to_structure(vfs, node_id, name, cluster_id, 1);
+        // Fill direct link
+        int32_t cluster_address;
+        cluster_address = (*vfs) -> superblock -> data_start_address + (cluster_id * ONE_CLUSTER_SIZE);
+        (*vfs) -> inode_blocks -> items[node_id] -> direct[0] = cluster_address;
+        (*vfs) -> inode_blocks -> items[node_id] -> cluster_count = 1;
+        (*vfs) -> inode_blocks -> size++;
+    } else if (folder_count > 1) {  // OTHER
+        // Find last path node
+        printf("INFO: NOT YET");
     } else {
-        fill_data_block_file(vfs, cluster_count);
-    }
-}
-
-void fill_data_block_directory(VFS **vfs, int cluster_count, char *name){
-    int32_t cluster_id;
-    int32_t data_block_address;
-    int free_c_exist;
-    free_c_exist = check_free_clusters(&(*vfs) -> bitmap, cluster_count);
-
-    if (free_c_exist == 0) {
-        printf("ERROR: File is too large");
+        printf("ERROR: Invalid path");
         return;
     }
-    cluster_id = get_one_free_cluster(&(*vfs) -> bitmap);
-    data_block_address = ((*vfs) -> superblock -> data_start_address) + (cluster_id * CLUSTER_SIZE);
-    (*vfs) -> inode_blocks -> items[(*vfs) -> inode_blocks -> size] -> direct[0] = data_block_address;
-    (*vfs) -> inode_blocks -> items[(*vfs) -> inode_blocks -> size] -> cluster_count = 1;
-    // TODO: create directory_item
-    DIR *dir;
-    dir_init(&dir, name, cluster_id);
-
-    fwrite_inode_block(vfs);
-    fwrite_mft_item(vfs, cluster_id);
-//    fwrite_directory(vfs);
-    // fwrite_dir
-
-}
-
-void dir_init(DIR **dir, char *name, int32_t node_id) {
-//    int size = CLUSTER_SIZE / sizeof(DIR_ITEM);
-//    (*dir) -> size = size;
-//    (*dir) -> files = calloc((*dir) -> size, sizeof(DIR_ITEM));
-//    (*dir) = calloc(1, sizeof(VFS));
-//    // TODO: check name len
-//    strcpy((*dir) -> item_name, name);
-//    (*dir) -> inode = node_id;
-//    (*dir) -> files = calloc(size, sizeof(INODE));
-}
+ }
 
 void fill_data_block_file(VFS **vfs, int cluster_count) {
     int free_c_exist;
@@ -99,7 +129,7 @@ void fill_data_block_file(VFS **vfs, int cluster_count) {
             // Fill direct links
             for (int j = start; j < already_setted; ++j) {
                 (*vfs) -> inode_blocks -> items[(*vfs) -> inode_blocks -> size] -> direct[j] =
-                        (*vfs) -> superblock -> data_start_address + 1 + (temp -> start_cluster_ID * CLUSTER_SIZE);
+                        (*vfs) -> superblock -> data_start_address + 1 + (temp -> start_cluster_ID * ONE_CLUSTER_SIZE);
                 start = j;
             }
         } else {
@@ -142,4 +172,22 @@ INODE *get_inode_from_path(VFS *vfs, char *tok) {
 //    int folder_ID = find_folder_id(vfs -> inode_blocks, temp_path);
 //    item = find_mft_item_by_uid(vfs -> inode_blocks, folder_ID);
 //    return item;
+}
+
+INODE *get_root_inode (INODE_BLOCK *inodes) {
+    return inodes -> items[0];
+}
+
+INODE *find_directory (VFS **vfs, char *dir_name) {
+    for (int i = 0; i < (*vfs) -> inode_blocks -> size; i++) {
+        if ((*vfs) -> inode_blocks -> items[i] -> isDirectory == 1) {
+            // Find directory in datablocks
+            int32_t cluster_id = ((*vfs) -> inode_blocks -> items[i] -> direct[0] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
+            int exist = directory_exist(vfs, cluster_id, dir_name);
+            if (exist == 1) {
+                return (*vfs) -> inode_blocks -> items[i];
+            }
+        }
+    }
+    return NULL;
 }

@@ -6,10 +6,10 @@ void superblock_init(SUPERBLOCK **superblock, int32_t disk_size, int32_t cluster
     strcpy((*superblock) -> volume_descriptor, DESCRIPTOR);
 
     (*superblock) -> disk_size = disk_size;
-    (*superblock) -> cluster_size = cluster_size;
-    (*superblock) -> cluster_count = disk_size / cluster_size;
+    (*superblock) -> cluster_size = ONE_CLUSTER_SIZE;
     (*superblock) -> inode_start_address = sizeof(SUPERBLOCK);
-    (*superblock) -> bitmap_start_address = (*superblock) -> inode_start_address + sizeof(INODE) + ((*superblock) -> disk_size * INODES_BLOCK_SIZE_RATIO);
+    (*superblock) -> bitmap_start_address = (*superblock) -> inode_start_address + (sizeof(INODE) * MAX_INODE_COUNT);
+    (*superblock) -> cluster_count = (disk_size - (*superblock) -> bitmap_start_address) / ONE_CLUSTER_SIZE;
     (*superblock) -> data_start_address = (*superblock) -> bitmap_start_address + sizeof(BITMAP) + ((*superblock) -> cluster_count * sizeof(unsigned char));
 }
 

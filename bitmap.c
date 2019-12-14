@@ -3,8 +3,9 @@
 void bitmap_init(BITMAP **bitmap, int32_t count) {
     (*bitmap) = calloc(1, sizeof(BITMAP));
     (*bitmap) -> length = count;
-    (*bitmap) -> data = calloc((*bitmap) -> length, sizeof(unsigned char));
-    memset((*bitmap) -> data, 0, (*bitmap) -> length);
+    for (int i = 0; i < (*bitmap) -> length; i++) {
+        (*bitmap) -> data[i] = 0;
+    }
 }
 
 int bitmap_contains_free_cluster(BITMAP *bitmap) {
@@ -76,6 +77,14 @@ int32_t get_one_free_cluster(BITMAP **bitmap) {
         }
     }
     return -1;
+}
+
+int32_t set_bitmap_on_index (BITMAP **bitmap, int index) {
+    if (index > (*bitmap) -> length) {
+        return -1;
+    }
+    (*bitmap) -> data[index] = 1;
+    return 1;
 }
 
 void bitmap_info(BITMAP *bitmap) {

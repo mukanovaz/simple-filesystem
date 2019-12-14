@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_C
   "/home/janelle/Documents/Repository/kiv-zos/bitmap.c" "/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/CMakeFiles/ZOS.dir/bitmap.c.o"
   "/home/janelle/Documents/Repository/kiv-zos/commands.c" "/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/CMakeFiles/ZOS.dir/commands.c.o"
+  "/home/janelle/Documents/Repository/kiv-zos/data_blocks.c" "/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/CMakeFiles/ZOS.dir/data_blocks.c.o"
   "/home/janelle/Documents/Repository/kiv-zos/inode_blocks.c" "/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/CMakeFiles/ZOS.dir/inode_blocks.c.o"
   "/home/janelle/Documents/Repository/kiv-zos/main.c" "/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/CMakeFiles/ZOS.dir/main.c.o"
   "/home/janelle/Documents/Repository/kiv-zos/superblock.c" "/home/janelle/Documents/Repository/kiv-zos/cmake-build-debug/CMakeFiles/ZOS.dir/superblock.c.o"

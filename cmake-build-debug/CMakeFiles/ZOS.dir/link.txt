@@ -1,1 +1,1 @@
-/usr/bin/cc -g   CMakeFiles/ZOS.dir/main.c.o CMakeFiles/ZOS.dir/commands.c.o CMakeFiles/ZOS.dir/bitmap.c.o CMakeFiles/ZOS.dir/vfs.c.o CMakeFiles/ZOS.dir/superblock.c.o CMakeFiles/ZOS.dir/inode_blocks.c.o  -o ZOS 
+/usr/bin/cc -g   CMakeFiles/ZOS.dir/main.c.o CMakeFiles/ZOS.dir/commands.c.o CMakeFiles/ZOS.dir/bitmap.c.o CMakeFiles/ZOS.dir/vfs.c.o CMakeFiles/ZOS.dir/superblock.c.o CMakeFiles/ZOS.dir/inode_blocks.c.o CMakeFiles/ZOS.dir/data_blocks.c.o  -o ZOS 

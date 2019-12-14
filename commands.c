@@ -11,7 +11,21 @@ void actual_directory(VFS *vfs) {
 }
 
 void make_directory(VFS **vfs, char *tok) {
-    printf("Make directory");
+    char *dir_name = strtok(NULL, SPLITTER);
+    if (dir_name == NULL || strlen(dir_name) <= 1) {
+        printf("ERROR: Invalid directory name\n");
+        return;
+    }
+
+    INODE *inode = find_directory(vfs, dir_name);
+    if (inode == NULL) {
+        inode_init(vfs, (*vfs) -> inode_blocks -> size, dir_name, DIRECTORY, DIRECTORY);
+        ls(vfs);
+        printf("OK");
+    } else {
+        printf("ERROR: A folder with name '%s' already exists\n", dir_name);
+        return;
+    }
 }
 
 void commands_help() {

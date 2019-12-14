@@ -8,6 +8,9 @@ CMakeFiles/ZOS.dir/commands.c.o: ../commands.c
 CMakeFiles/ZOS.dir/commands.c.o: ../commands.h
 CMakeFiles/ZOS.dir/commands.c.o: ../main.h
 
+CMakeFiles/ZOS.dir/data_blocks.c.o: ../data_blocks.c
+CMakeFiles/ZOS.dir/data_blocks.c.o: ../main.h
+
 CMakeFiles/ZOS.dir/inode_blocks.c.o: ../inode_blocks.c
 CMakeFiles/ZOS.dir/inode_blocks.c.o: ../main.h
 
