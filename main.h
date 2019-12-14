@@ -111,13 +111,13 @@ struct my_bitmap {
 
 struct data_blocks {
     int32_t length; // const
-    DIR **directory;
+    DIR *directory[CLUSTER_COUNT];
 };
 
 struct directory {
     int block_id;
     int32_t size;
-    DIR_ITEM **files;
+    DIR_ITEM *files[MAX_DIR_COUNT];
 };
 
 struct directory_item {
@@ -166,6 +166,7 @@ void dir_init(DIR **dir, char *name, int32_t node_id);
 void init_root_directory(VFS **vfs, int node_id);
 void add_folder_to_structure(VFS **vfs, int node_id, char *dir_name, int32_t cluster_id,  int directory_size) ;
 INODE *find_directory (VFS **vfs, char *dir_name);
+INODE *get_inode_by_id (VFS **vfs, int32_t id);
 
 void fwrite_inode_block(VFS **vfs);
 void fwrite_mft_item(VFS **vfs, int node_id);
