@@ -53,6 +53,8 @@
 
 #define FILE_NF "FILE NOT FOUND"
 #define PATH_NF "PATH NOT FOUND"
+#define FILE_IS_DIR "IS NOT A DIRECTORY"
+#define DIR_NOT_FOUND "DIRECTORY NOT FOUND"
 #define EXIST "EXIST"
 #define NE "NOT EMPTY"
 #define CCFILE "CANNOT CREATE FILE"
@@ -137,6 +139,7 @@ void hello();
 int compare_two_string(char *string1, char *string2);
 int getLine (char *prmpt, char *buff, size_t sz);
 int get_folder_count(char *str);
+int get_path_array (char *path, char *array[10]);
 
 // BITMAP
 int32_t get_one_free_cluster(BITMAP **bitmap);
@@ -146,15 +149,21 @@ int bitmap_contains_free_cluster(BITMAP *bitmap);
 int used_clusters(BITMAP *bitmap);
 void bitmap_info(BITMAP *bitmap);
 struct the_fragment_temp *find_free_cluster(BITMAP **bitmap, int needed_count);
-int32_t set_bitmap_on_index (BITMAP **bitmap, int index);
+int32_t set_one_bitmap_on_index (BITMAP **bitmap, int index);
+int32_t set_zero_bitmap_on_index (BITMAP **bitmap, int index);
+void fwrite_bitmap(VFS **vfs);
+void fread_bitmap(VFS **vfs, FILE *file);
 
 // VIRTUAL FILESYSTEM
 void vfs_init(VFS **vfs, char *filename, size_t disk_size);
 void create_vfs_file(VFS **vfs);
+void set_path_to_root(VFS **vfs);
+void go_to_parent_folder(VFS **vfs);
 
 // SUPERBLOCK
 void superblock_init(SUPERBLOCK **superblock, int32_t disk_size, int32_t cluster_size);
 void superblock_info(SUPERBLOCK *superblock);
+void fread_superblock(VFS **vfs, FILE *file);
 
 // INODE BLOCKS
 void inode_blocks_init(VFS **vfs);
@@ -167,13 +176,42 @@ void init_root_directory(VFS **vfs, int node_id);
 void add_folder_to_structure(VFS **vfs, int node_id, char *dir_name, int32_t cluster_id,  int directory_size) ;
 INODE *find_directory (VFS **vfs, char *dir_name);
 INODE *get_inode_by_id (VFS **vfs, int32_t id);
+int is_folder_empty (VFS **vfs, DIR *dir);
+int remove_directory (VFS **vfs, INODE *inode);
 
 void fwrite_inode_block(VFS **vfs);
-void fwrite_mft_item(VFS **vfs, int node_id);
+void fwrite_inode_item(VFS **vfs, int node_id);
+void fread_inode_block(VFS **vfs, FILE *file);
 
 // DATABLOCKS
 void data_blocks_init (DATA_BLOCKS **data_blocks, int32_t count);
 int directory_exist (VFS **vfs, int32_t cluster_id, char *dir_name);
+DIR *get_directory_by_name(VFS **vfs, char *dir_name);
+DIR *get_block_by_id (VFS **vfs, int32_t data_block_id);
+void fwrite_data_block(VFS **vfs, int block_id);
+void fwrite_directory (VFS **vfs, int block_id);
+void fwrite_files (VFS **vfs, int block_id);
+void fread_data_blocks(VFS **vfs, FILE *file);
+
+
+// COMMANDS
+void actual_directory(VFS *vfs);
+void make_directory(VFS **vfs, char *tok);
+
+void copy_file(char *tok);
+void move_file(char *tok);
+void remove_file(char *tok);
+void remove_empty_directory(VFS **vfs, char *tok);
+void list_files_and_directories(VFS **vfs, char *tok);
+void concatenate(char *tok);
+void change_directory(VFS **vfs, char *tok);
+void present_working_directory();
+void inode_info(char *tok);
+void hd_to_fs(char *tok);
+void fs_to_hd(char *tok);
+int run_commands_from_file(char *tok);
+void file_format(char *tok);
+void commands_help();
 
 void ls (VFS **vfs);
 #endif //ZOS_MAIN_H

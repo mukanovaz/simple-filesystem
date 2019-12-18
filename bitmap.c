@@ -79,11 +79,19 @@ int32_t get_one_free_cluster(BITMAP **bitmap) {
     return -1;
 }
 
-int32_t set_bitmap_on_index (BITMAP **bitmap, int index) {
+int32_t set_one_bitmap_on_index (BITMAP **bitmap, int index) {
     if (index > (*bitmap) -> length) {
         return -1;
     }
     (*bitmap) -> data[index] = 1;
+    return 1;
+}
+
+int32_t set_zero_bitmap_on_index (BITMAP **bitmap, int index) {
+    if (index > (*bitmap) -> length) {
+        return -1;
+    }
+    (*bitmap) -> data[index] = 0;
     return 1;
 }
 
@@ -99,4 +107,20 @@ void bitmap_info(BITMAP *bitmap) {
         printf("%d", bitmap -> data[i]);
     }
     printf("\n");
+}
+
+void fwrite_bitmap(VFS **vfs) {
+    fseek((*vfs) -> FILE, (*vfs) -> superblock -> bitmap_start_address, SEEK_SET);
+    fwrite((*vfs) -> bitmap -> data, sizeof(unsigned char), (*vfs) -> bitmap -> length, (*vfs) -> FILE);
+    fflush((*vfs) -> FILE);
+}
+
+void fread_bitmap(VFS **vfs, FILE *file) {
+    (*vfs) -> bitmap = calloc(1, sizeof(BITMAP));
+    (*vfs) -> bitmap -> length = (*vfs) -> superblock -> cluster_count;
+    for (int i = 0; i < (*vfs) -> bitmap -> length; i++) {
+        (*vfs) -> bitmap -> data[i] = 0;
+    }
+    fseek(file, (*vfs) -> superblock -> bitmap_start_address, SEEK_SET);
+    fread((*vfs) -> bitmap -> data, sizeof(char unsigned), (*vfs) -> superblock -> cluster_count, file);
 }

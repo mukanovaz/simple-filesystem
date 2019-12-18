@@ -13,6 +13,12 @@ void superblock_init(SUPERBLOCK **superblock, int32_t disk_size, int32_t cluster
     (*superblock) -> data_start_address = (*superblock) -> bitmap_start_address + sizeof(BITMAP) + ((*superblock) -> cluster_count * sizeof(unsigned char));
 }
 
+void fread_superblock(VFS **vfs, FILE *file) {
+    (*vfs) -> superblock = calloc(1, sizeof(SUPERBLOCK));
+    fread((*vfs) -> superblock, sizeof(SUPERBLOCK), 1, file);
+}
+
+
 void superblock_info(SUPERBLOCK *superblock) {
     printf("Boot record:\n----------------\n");
     printf("Signature: %s\n", superblock -> signature);

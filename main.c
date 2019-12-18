@@ -2,7 +2,6 @@
 #include <string.h>
 
 #include "main.h"
-#include "commands.h"
 
 VFS *my_vfs;
 char data_filename[] = "filesystem.dat";
@@ -16,7 +15,8 @@ int main() {
     vfs_init(&my_vfs, data_filename, DISK_SIZE);
 
     while (1) {
-        rc = getLine ("\n$ ", buff, sizeof(buff));
+        printf("\n%s ", my_vfs -> actual_path);
+        rc = getLine ("$ ", buff, sizeof(buff));
         if (rc == NO_INPUT) {
             printf ("\nNo input\n");
             continue;
@@ -42,20 +42,19 @@ int main() {
             make_directory(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, REMOVE_EMPTY_DIRECTORY) == 0) {
-//            remove_empty_directory(&vfs, tok);
+            remove_empty_directory(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, PRINT_DIRECTORY) == 0) {
-//            list_files_and_directories(vfs, tok);
+            list_files_and_directories(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, PRINT_FILE) == 0) {
 //            concatenate(vfs, tok);
         }
         else if (compare_two_string(command_part, MOVE_TO_DIRECTORY) == 0) {
-//            change_directory(&vfs, tok);
+            change_directory(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, ACTUAL_DIRECTORY) == 0) {
             actual_directory(my_vfs);
-            //present_working_directory(vfs);
         }
         else if (compare_two_string(command_part, MFT_ITEM_INFO) == 0) {
 //            inode_info(vfs, tok);
@@ -148,4 +147,19 @@ int get_folder_count(char *str) {
         folders_count++;
     }
     return folders_count;
+}
+
+int get_path_array (char *path, char *array[10]) {
+    int i=0, array_size = 0;
+
+    char string[strlen(path)];
+    strcpy(string, path);
+    array[i] = strtok(string,"/");
+
+    while(array[i]!=NULL)
+    {
+        array[++i] = strtok(NULL,"/");
+        array_size++;
+    }
+    return array_size;
 }

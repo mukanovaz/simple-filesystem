@@ -6,7 +6,6 @@ CMakeFiles/ZOS.dir/bitmap.c.o
  /home/janelle/Documents/Repository/kiv-zos/main.h
 CMakeFiles/ZOS.dir/commands.c.o
  /home/janelle/Documents/Repository/kiv-zos/commands.c
- /home/janelle/Documents/Repository/kiv-zos/commands.h
  /home/janelle/Documents/Repository/kiv-zos/main.h
 CMakeFiles/ZOS.dir/data_blocks.c.o
  /home/janelle/Documents/Repository/kiv-zos/data_blocks.c
@@ -15,7 +14,6 @@ CMakeFiles/ZOS.dir/inode_blocks.c.o
  /home/janelle/Documents/Repository/kiv-zos/inode_blocks.c
  /home/janelle/Documents/Repository/kiv-zos/main.h
 CMakeFiles/ZOS.dir/main.c.o
- /home/janelle/Documents/Repository/kiv-zos/commands.h
  /home/janelle/Documents/Repository/kiv-zos/main.c
  /home/janelle/Documents/Repository/kiv-zos/main.h
 CMakeFiles/ZOS.dir/superblock.c.o

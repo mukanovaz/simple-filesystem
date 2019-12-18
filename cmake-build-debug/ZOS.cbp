@@ -84,9 +84,6 @@
 		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/commands.c">
 			<Option target="ZOS"/>
 		</Unit>
-		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/commands.h">
-			<Option target="ZOS"/>
-		</Unit>
 		<Unit filename="/home/janelle/Documents/Repository/kiv-zos/data_blocks.c">
 			<Option target="ZOS"/>
 		</Unit>
