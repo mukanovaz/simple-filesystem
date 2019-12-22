@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
+#include <sys/stat.h>
 
 #include "main.h"
 
@@ -36,7 +38,7 @@ int main() {
 //            move_file(&vfs, tok);
         }
         else if (compare_two_string(command_part, REMOVE_FILE) == 0) {
-//            remove_file(&vfs, tok);
+            remove_file(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, MAKE_DIRECTORY) == 0) {
             make_directory(&my_vfs, command_part);
@@ -48,7 +50,7 @@ int main() {
             list_files_and_directories(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, PRINT_FILE) == 0) {
-//            concatenate(vfs, tok);
+            concatenate(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, MOVE_TO_DIRECTORY) == 0) {
             change_directory(&my_vfs, command_part);
@@ -57,13 +59,13 @@ int main() {
             actual_directory(my_vfs);
         }
         else if (compare_two_string(command_part, MFT_ITEM_INFO) == 0) {
-//            inode_info(vfs, tok);
+            inode_info(&my_vfs, command_part);
         }
-        else if (compare_two_string(command_part, HD_TO_PSEUDO) == 0) {
-//            hd_to_fs(&vfs, tok);
+        else if (compare_two_string(command_part, INCP) == 0) {
+            hd_to_fs(&my_vfs, command_part);
         }
-        else if (compare_two_string(command_part, PSEUDO_TO_HD) == 0) {
-//            fs_to_hd(&vfs, tok);
+        else if (compare_two_string(command_part, OUTCP) == 0) {
+            fs_to_hd(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, LOAD_COMMANDS) == 0) {
 //            is_used_file = run_commands_from_file(&file_with_commands, tok);
@@ -162,4 +164,46 @@ int get_path_array (char *path, char *array[10]) {
         array_size++;
     }
     return array_size;
+}
+
+void removeChar(char *str, char garbage) {
+
+    char *src, *dst;
+    for (src = dst = str; *src != '\0'; src++) {
+        *dst = *src;
+        if (*dst != garbage) dst++;
+    }
+    *dst = '\0';
+}
+
+int file_exists(const char *fname)
+{
+    FILE *file;
+    if ((file = fopen(fname, "r")))
+    {
+        fclose(file);
+        return 1;
+    }
+    return 0;
+}
+
+
+int directory_exists(char *path) {
+    struct stat s;
+    int err = stat(path, &s);
+    if(-1 == err) {
+        if(ENOENT == errno) {
+            return 0;
+        }
+        else return 0;
+    }
+    else {
+        if(S_ISDIR(s.st_mode)) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+    return 0;
 }

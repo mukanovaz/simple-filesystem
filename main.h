@@ -28,8 +28,8 @@
 #define MOVE_TO_DIRECTORY "cd"
 #define ACTUAL_DIRECTORY "pwd"
 #define MFT_ITEM_INFO "info"
-#define HD_TO_PSEUDO "incp"
-#define PSEUDO_TO_HD "outcp"
+#define INCP "incp"
+#define OUTCP "outcp"
 #define LOAD_COMMANDS "load"
 #define FILE_FORMATTING "format"
 #define CONTROL_KONZ "check"
@@ -44,9 +44,12 @@
 #define CLUSTER_COUNT 23
 #define MAX_NAME_LEN 12
 #define DIRECTORY 1
+#define MY_FILE 0
 #define MAX_DIR_COUNT 256
 #define MAX_INODE_COUNT 100
 #define MAX_DIRECT_LINKS 5
+
+#define ID_ITEM_FREE -1
 
 
 // ================================== [FILESYSTEM] ==================================
@@ -54,7 +57,7 @@
 #define FILE_NF "FILE NOT FOUND"
 #define PATH_NF "PATH NOT FOUND"
 #define FILE_IS_DIR "IS NOT A DIRECTORY"
-#define DIR_NOT_FOUND "DIRECTORY NOT FOUND"
+#define DIR_NOT_FOUND "FILE NOT FOUND"
 #define EXIST "EXIST"
 #define NE "NOT EMPTY"
 #define CCFILE "CANNOT CREATE FILE"
@@ -65,18 +68,14 @@ typedef struct my_inode_array INODE_BLOCK;
 typedef struct my_bitmap BITMAP;
 typedef struct my_vfs VFS;
 typedef struct directory_item DIR_ITEM;
-typedef struct directory DIR;
-typedef struct data_blocks DATA_BLOCKS;
 
 struct my_vfs {
     SUPERBLOCK *superblock;
     INODE_BLOCK *inode_blocks;
     BITMAP *bitmap;
-    DATA_BLOCKS *data_blocks;
 
     char *actual_path;
     char *filename;
-    FILE *FILE;
 };
 
 struct superblock {
@@ -111,22 +110,10 @@ struct my_bitmap {
     int data[CLUSTER_COUNT];
 };
 
-struct data_blocks {
-    int32_t length; // const
-    DIR *directory[CLUSTER_COUNT];
-};
-
-struct directory {
-    int block_id;
-    int32_t size;
-    DIR_ITEM *files[MAX_DIR_COUNT];
-};
-
 struct directory_item {
     int32_t inode;                   // inode odpovídající souboru
     char item_name[12];              //8+3 + /0 C/C++ ukoncovaci string znak
 };
-
 
 struct the_fragment_temp {
     int successful;
@@ -140,6 +127,9 @@ int compare_two_string(char *string1, char *string2);
 int getLine (char *prmpt, char *buff, size_t sz);
 int get_folder_count(char *str);
 int get_path_array (char *path, char *array[10]);
+void removeChar(char *str, char garbage);
+int file_exists(const char *fname);
+int directory_exists(char *path);
 
 // BITMAP
 int32_t get_one_free_cluster(BITMAP **bitmap);
@@ -156,7 +146,7 @@ void fread_bitmap(VFS **vfs, FILE *file);
 
 // VIRTUAL FILESYSTEM
 void vfs_init(VFS **vfs, char *filename, size_t disk_size);
-void create_vfs_file(VFS **vfs);
+void create_vfs_file(VFS **vfs, size_t disk_size, FILE *file);
 void set_path_to_root(VFS **vfs);
 void go_to_parent_folder(VFS **vfs);
 
@@ -166,51 +156,42 @@ void superblock_info(SUPERBLOCK *superblock);
 void fread_superblock(VFS **vfs, FILE *file);
 
 // INODE BLOCKS
-void inode_blocks_init(VFS **vfs);
-void inode_init(VFS **vfs, int node_id, char *name, int isDirectory, int item_size);
-INODE *get_inode_from_path(VFS *vfs, char *tok);
-void fill_data_block_directory(VFS **vfs, int cluster_count, char *name);
-void fill_data_block_file(VFS **vfs, int cluster_count);
-void dir_init(DIR **dir, char *name, int32_t node_id);
-void init_root_directory(VFS **vfs, int node_id);
-void add_folder_to_structure(VFS **vfs, int node_id, char *dir_name, int32_t cluster_id,  int directory_size) ;
+int inode_blocks_init(VFS **vfs);
+int inode_init(VFS **vfs, int node_id, char *name, int isDirectory, int item_size, int32_t parent_node_id);
+int fill_data_block_directory(VFS **vfs, int node_id, char *new_folder_name, int32_t parent_node_id);
+int fill_data_block_file(VFS **vfs, char *name, int cluster_count, int node_id, int32_t parent_node_id);
+int init_root_directory(VFS **vfs, int node_id);
+int add_folder_to_structure(VFS **vfs, int node_id, char *dir_name, int32_t cluster_id,  int dir_item_id) ;
 INODE *find_directory (VFS **vfs, char *dir_name);
 INODE *get_inode_by_id (VFS **vfs, int32_t id);
-int is_folder_empty (VFS **vfs, DIR *dir);
 int remove_directory (VFS **vfs, INODE *inode);
-
+INODE *find_inode_by_name (VFS **vfs, char *name);
+int get_free_dir_item_id (VFS **vfs, INODE *inode);
+int remove_file_from_directory(VFS **vfs, int32_t parent_inode_id, int32_t inode_id);
+INODE *directory_exist (VFS **vfs, char *actual_folder_name, char *new_folder_name);
 void fwrite_inode_block(VFS **vfs);
 void fwrite_inode_item(VFS **vfs, int node_id);
 void fread_inode_block(VFS **vfs, FILE *file);
-
-// DATABLOCKS
-void data_blocks_init (DATA_BLOCKS **data_blocks, int32_t count);
-int directory_exist (VFS **vfs, int32_t cluster_id, char *dir_name);
-DIR *get_directory_by_name(VFS **vfs, char *dir_name);
-DIR *get_block_by_id (VFS **vfs, int32_t data_block_id);
-void fwrite_data_block(VFS **vfs, int block_id);
-void fwrite_directory (VFS **vfs, int block_id);
-void fwrite_files (VFS **vfs, int block_id);
-void fread_data_blocks(VFS **vfs, FILE *file);
-
+int make_file_in_inodes(VFS **vfs, char *source_name, char *dest_name, INODE *dest_inode);
+int remove_file_from_fs (VFS **vfs, INODE *inode);
 
 // COMMANDS
 void actual_directory(VFS *vfs);
 void make_directory(VFS **vfs, char *tok);
 
-void copy_file(char *tok);
-void move_file(char *tok);
-void remove_file(char *tok);
+void copy_file(VFS **vfs, char *tok);
+void move_file(VFS **vfs, char *tok);
+void remove_file(VFS **vfs, char *tok);
 void remove_empty_directory(VFS **vfs, char *tok);
 void list_files_and_directories(VFS **vfs, char *tok);
-void concatenate(char *tok);
+void concatenate(VFS **vfs, char *tok);
 void change_directory(VFS **vfs, char *tok);
 void present_working_directory();
-void inode_info(char *tok);
-void hd_to_fs(char *tok);
-void fs_to_hd(char *tok);
-int run_commands_from_file(char *tok);
-void file_format(char *tok);
+void inode_info(VFS **vfs, char *tok);
+void hd_to_fs(VFS **vfs, char *tok);
+void fs_to_hd(VFS **vfs, char *tok);
+int run_commands_from_file(VFS **vfs, char *tok);
+void file_format(VFS **vfs, char *tok);
 void commands_help();
 
 void ls (VFS **vfs);

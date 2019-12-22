@@ -110,9 +110,12 @@ void bitmap_info(BITMAP *bitmap) {
 }
 
 void fwrite_bitmap(VFS **vfs) {
-    fseek((*vfs) -> FILE, (*vfs) -> superblock -> bitmap_start_address, SEEK_SET);
-    fwrite((*vfs) -> bitmap -> data, sizeof(unsigned char), (*vfs) -> bitmap -> length, (*vfs) -> FILE);
-    fflush((*vfs) -> FILE);
+    FILE *file;
+    file = fopen((*vfs) -> filename, "r+b");
+
+    fseek(file, (*vfs) -> superblock -> bitmap_start_address, SEEK_SET);
+    fwrite((*vfs) -> bitmap -> data, sizeof(unsigned char), (*vfs) -> bitmap -> length, file);
+    fflush(file);
 }
 
 void fread_bitmap(VFS **vfs, FILE *file) {
