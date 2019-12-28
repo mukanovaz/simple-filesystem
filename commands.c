@@ -1,6 +1,7 @@
 #include <values.h>
 #include "main.h"
 
+
 void actual_directory(VFS *vfs) {
 
     char path[strlen(vfs -> actual_path)];
@@ -104,7 +105,6 @@ void change_directory(VFS **vfs, char *tok) {
 
     // Back
     if (strncmp(dir_name, "..", 2) == 0) {
-        // Back
         if (strlen((*vfs) ->  actual_path) > 1) {
             go_to_parent_folder(vfs);
         }
@@ -169,6 +169,8 @@ void inode_info(VFS **vfs, char *tok) {
         printf("ERROR: Invalid directory name\n");
         return;
     }
+    if (strlen(dir_name) > 0 && dir_name[strlen(dir_name) - 1] == '\n') dir_name[strlen(dir_name) - 1] = '\0';
+
     INODE *inode = find_inode_by_name(vfs, dir_name);
     if (inode == NULL) {
         printf("ERROR: %s", DIR_NOT_FOUND);
@@ -222,6 +224,7 @@ void hd_to_fs(VFS **vfs, char *tok) {
         printf("ERROR: Invalid destination path\n");
         return;
     }
+    if (strlen(dest) > 0 && dest[strlen(dest) - 1] == '\n') dest[strlen(dest) - 1] = '\0';
 
     // Check if source exist
     FILE *file_src = fopen(dir_name, "rb");
@@ -253,6 +256,7 @@ void hd_to_fs(VFS **vfs, char *tok) {
 
     // Create file in pseudo FS
     make_file_in_inodes(vfs, dir_name, last, destination);
+    printf("INFO: OK");
 }
 
 
@@ -404,8 +408,180 @@ void remove_file(VFS **vfs, char *tok) {
         return;
     }
     printf("INFO: OK");
-
 }
+
+void copy_file(VFS **vfs, char *tok) {
+    char *source = strtok(NULL, SPLITTER);
+    if (source == NULL || strlen(source) <= 1) {
+        printf("ERROR: Invalid source path\n");
+        return;
+    }
+
+    char *dest = strtok(NULL, SPLITTER);
+    if (dest == NULL || strlen(dest) <= 1) {
+        printf("ERROR: Invalid destination path\n");
+        return;
+    }
+    if (strlen(dest) > 0 && dest[strlen(dest) - 1] == '\n') dest[strlen(dest) - 1] = '\0';
+
+    char *full_path = malloc(sizeof(char) * strlen(dest));
+    strcpy(full_path, (*vfs) -> actual_path);
+    strcat(full_path, "/");
+    strcat(full_path, dest);
+
+    char * token, * new_file;
+    new_file = token = strtok(dest, "/");
+    for (;(token = strtok(NULL, "/")) != NULL; new_file = token);
+
+    // Cesta bez koncove slozky
+    char *path = malloc(sizeof(char) * strlen(full_path));
+    strcpy(path, full_path);
+    path[strlen(full_path) - strlen(new_file)] = '\0';
+
+    // Parent folder name
+    char * t, * parent;
+    parent = t = strtok(path, "/");
+    for (;(t = strtok(NULL, "/")) != NULL; parent = t);
+
+    INODE *source_inode = find_inode_by_name(vfs, source);
+    if (source_inode == NULL) {
+        printf("ERROR: cannot find inode with name '%s'", source);
+        return;
+    }
+
+    INODE *dest_inode = find_inode_by_name(vfs, parent);
+    if (dest_inode == NULL) {
+        printf("ERROR: cannot find inode with name '%s'", parent);
+        return;
+    }
+
+
+    INODE *test = find_inode_by_name(vfs, new_file);
+    if (test != NULL) {
+        printf("ERROR: file already exist in destination directory");
+        return;
+    }
+
+    if (source_inode -> isDirectory) {
+        printf("ERROR: cannot move directory");
+    }
+
+    if (!dest_inode -> isDirectory) {
+        printf("ERROR: destination folder is file");
+    }
+
+    if (copy_file_in_directory(vfs, dest_inode, source_inode, new_file) == -1) {
+        return;
+    }
+    printf("INFO: OK");
+}
+
+void move_file(VFS **vfs, char *tok) {
+    char *source = strtok(NULL, SPLITTER);
+    if (source == NULL || strlen(source) <= 1) {
+        printf("ERROR: Invalid source path\n");
+        return;
+    }
+
+    char *dest = strtok(NULL, SPLITTER);
+    if (dest == NULL || strlen(dest) <= 1) {
+        printf("ERROR: Invalid destination path\n");
+        return;
+    }
+    if (strlen(dest) > 0 && dest[strlen(dest) - 1] == '\n') dest[strlen(dest) - 1] = '\0';
+
+    INODE *source_inode = find_inode_by_name(vfs, source);
+    if (source_inode == NULL) {
+        printf("ERROR: cannot find inode with name '%s'", source);
+        return;
+    }
+
+    INODE *dest_inode = find_inode_by_name(vfs, dest);
+    if (dest_inode == NULL) {
+        printf("ERROR: cannot find inode with name '%s'", dest);
+        return;
+    }
+
+    if (source_inode -> isDirectory) {
+        printf("ERROR: cannot move directory");
+    }
+
+    if (!dest_inode -> isDirectory) {
+        printf("ERROR: destination folder is file");
+    }
+
+    // Check if destination folder contains source file
+    if (is_folder_contains_item(vfs, dest_inode, source_inode) != NULL) {
+        printf("ERROR: file already exist in destination directory");
+        return;
+    }
+
+    if (move_file_into_folder(vfs, dest_inode, source_inode) == -1) {
+        return;
+    }
+
+    printf("INFO: OK");
+}
+
+int run_commands_from_file(FILE **file, char *tok) {
+    tok = strtok(NULL, " \n");
+    (*file) = fopen(tok, "r");
+    if ((*file) != NULL) {
+        printf("OK\n");
+        return 1;
+    }
+    else {
+        printf("FILE NOT FOUND\n");
+        return 0;
+    }
+}
+
+void consistency_check(VFS **vfs, char *tok) {
+    for (int i = 0; i < (*vfs) -> inode_blocks -> size; i++) {
+        char *source_file_name = get_inode_name(vfs, (*vfs) -> inode_blocks -> items[i] -> nodeid);
+        int item_size = (*vfs) -> inode_blocks -> items[i] -> file_size;
+
+        if ((*vfs) -> inode_blocks -> items[i] -> isDirectory) {
+            printf("DIRECTORY: '%s' - ", source_file_name);
+        } else {
+            printf("FILE: '%s' - ", source_file_name);
+        }
+
+        int cluster_count = 1;
+        if (item_size !=0) {
+            cluster_count = item_size / ONE_CLUSTER_SIZE;
+            if ((item_size % ONE_CLUSTER_SIZE) != 0) cluster_count++;
+        }
+
+        if ((*vfs) -> inode_blocks -> items[i] -> cluster_count != cluster_count) {
+            printf("NOT OK\n");
+        } else {
+            printf("OK\n");
+        }
+
+        free(source_file_name);
+    }
+}
+
+void test(VFS **vfs, char *tok) {
+    char *dir_name = strtok(NULL, SPLITTER);
+    if (dir_name == NULL || strlen(dir_name) <= 1) {
+        printf("ERROR: Invalid directory name\n");
+        return;
+    }
+    if (strlen(dir_name) > 0 && dir_name[strlen(dir_name) - 1] == '\n') dir_name[strlen(dir_name) - 1] = '\0';
+
+    INODE *inode = find_inode_by_name(vfs, dir_name);
+    if (inode == NULL) {
+        printf("ERROR: cannot find inode with name '%s'", dir_name);
+        return;
+    }
+
+    inode -> cluster_count--;
+    fwrite_inode_block(vfs);
+    fwrite_inode_item(vfs, inode -> nodeid);
+}
+
 
 void commands_help() {
     printf("+-----------------------------------------------------------------------------------------+\n");

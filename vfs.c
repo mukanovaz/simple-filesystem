@@ -94,3 +94,16 @@ void go_to_parent_folder(VFS **vfs) {
 
     strcpy((*vfs) -> actual_path, path);
 }
+
+void systeminfo(VFS **vfs) {
+    printf("+-----------------------------------+\n");
+    printf("  DISK SIZE: %d\n", (*vfs) -> superblock -> disk_size);
+    printf("  SIGNATURE: %s\n", (*vfs) -> superblock -> signature);
+    printf("  DESCRIPTOR: %s\n", (*vfs) -> superblock -> volume_descriptor);
+    bitmap_info((*vfs) -> bitmap);
+    printf("+-----------------------------------+\n");
+    printf("              [INODEs]\n");
+    printf("  INODES COUNT: %d bytes\n", MAX_INODE_COUNT);
+    printf("  INODES: [%d - not used] [%d - used]\n", MAX_INODE_COUNT - (*vfs) -> inode_blocks -> size, (*vfs) -> inode_blocks -> size);
+    printf("+-----------------------------------+\n");
+}

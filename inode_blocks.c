@@ -77,7 +77,6 @@ int init_root_directory(VFS **vfs, int node_id) {
     return 1;
 }
 
-// TODO: obrabotat return
 int add_folder_to_structure(VFS **vfs, int node_id, char *dir_name, int32_t cluster_id,  int dir_item_id) {
     int32_t max_dir_count = ONE_CLUSTER_SIZE / sizeof(DIR_ITEM);
     FILE *file;
@@ -380,6 +379,42 @@ INODE *find_inode_by_name (VFS **vfs, char *name) {
     return NULL;
 }
 
+char *get_inode_name (VFS **vfs, int inode_id) {
+    int32_t max_dir_count = ONE_CLUSTER_SIZE / sizeof(DIR_ITEM);
+
+    FILE *file;
+    file = fopen((*vfs) -> filename, "r+b");
+    if(file == NULL)
+    {
+        printf("ERROR: Cannot open file %s\n", (*vfs) -> filename);
+        return NULL;
+    }
+    for (int j = 0; j < (*vfs) -> inode_blocks -> size; j++) {
+        if ((*vfs) -> inode_blocks -> items[j] -> isDirectory) {
+            int32_t block_start_addr = (*vfs) -> inode_blocks -> items[j] -> direct[0];
+            for (int i = 0; i < max_dir_count; i++) {
+                int32_t dir_item_addr = block_start_addr + (sizeof(DIR_ITEM) * i); // First directory item
+                // Compare name with first dir item
+                DIR_ITEM *item = (DIR_ITEM*) malloc(sizeof(DIR_ITEM));
+                fseek(file, dir_item_addr, SEEK_SET);
+                fread(item, sizeof(DIR_ITEM), 1, file);
+
+                if (item -> inode == inode_id) {
+                    char *result = malloc(sizeof(char*));
+                    strcpy(result, item->item_name);
+                    free(item);
+                    fclose(file);
+                    return result;
+                }
+                free(item);
+            }
+        }
+    }
+    fclose(file);
+    return NULL;
+}
+
+
 INODE *directory_exist (VFS **vfs, char *actual_folder_name, char *new_folder_name) {
     int32_t max_dir_count = ONE_CLUSTER_SIZE / sizeof(DIR_ITEM);
 
@@ -495,7 +530,7 @@ int remove_file_from_fs (VFS **vfs, INODE *inode) {
         return -1;
     }
 
-    INODE *parent_inode;
+    INODE *parent_inode = NULL;
     // Delete file from directory
     for (int j = 0; j < (*vfs) -> inode_blocks -> size; j++) {
         if ((*vfs) -> inode_blocks -> items[j] -> isDirectory) {
@@ -623,13 +658,10 @@ int make_file_in_inodes(VFS **vfs, char *source_name, char *dest_name, INODE *de
         return -1;
     }
 
-    // int inode_init(VFS **vfs, int node_id, char *name, int isDirectory, int item_size, int32_t parent_node_id)
     int new_inode = inode_init(vfs, (*vfs) -> inode_blocks -> size, dest_name, MY_FILE, file_size, dest_inode -> nodeid);
     if (new_inode == -1) {
         return -1;
     }
-
-    printf("INFO: file %s created", dest_name);
 
     // Fill clusters
     int cluster_count = (*vfs) -> inode_blocks -> items[new_inode] -> cluster_count;
@@ -653,13 +685,142 @@ int make_file_in_inodes(VFS **vfs, char *source_name, char *dest_name, INODE *de
 
     for (int i = 0; i < cluster_count; i++) {
         // TODO: add indirect
-        int cluster_id = ((*vfs) -> inode_blocks -> items[new_inode] -> direct[0] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
-        int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
-        fseek(file, data_block_addr, SEEK_SET);
-        fwrite(buffer[i], ONE_CLUSTER_SIZE, 1, file);
-        fflush(file);
+        if (i <= 5) {
+            int cluster_id = ((*vfs) -> inode_blocks -> items[new_inode] -> direct[0] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
+            int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
+            fseek(file, data_block_addr, SEEK_SET);
+            fwrite(buffer[i], ONE_CLUSTER_SIZE, 1, file);
+            fflush(file);
+        } else {
+            // Indirect
+            int32_t cluster_id = get_one_free_cluster(&(*vfs) -> bitmap);
+        }
+
     }
 
     fclose(file);
     return 1;
+}
+
+char *is_folder_contains_item (VFS **vfs, INODE *dest_inode, INODE *source_inode) {
+    FILE *file;
+    file = fopen((*vfs) -> filename, "r+b");
+    if(file == NULL)
+    {
+        printf("ERROR: Cannot create file %s\n", (*vfs) -> filename);
+        return NULL;
+    }
+
+    int32_t max_dir_count = ONE_CLUSTER_SIZE / sizeof(DIR_ITEM);
+    int32_t block_start_addr = dest_inode -> direct[0];
+
+    for (int i = 0; i < max_dir_count; i++) {
+        int32_t dir_item_addr = block_start_addr + (sizeof(DIR_ITEM) * i);
+        DIR_ITEM *item = (DIR_ITEM*) malloc(sizeof(DIR_ITEM));
+        fseek(file, dir_item_addr, SEEK_SET);
+        fread(item, sizeof(DIR_ITEM), 1, file);
+
+        if (item -> inode == source_inode -> nodeid) {
+            return item -> item_name;
+        }
+        free(item);
+    }
+    fclose(file);
+    return NULL;
+}
+
+int copy_file_in_directory(VFS **vfs, INODE *dest_inode, INODE *source_inode, char *new_filename) {
+    // init new inode
+    INODE *parent_inode = get_parent_inode(vfs, source_inode);
+    if (parent_inode == NULL) {
+        return -1;
+    }
+
+    int new_inode = inode_init(vfs, (*vfs) -> inode_blocks -> size, new_filename, MY_FILE, source_inode -> file_size, parent_inode -> nodeid);
+    if (new_inode == -1) {
+        return -1;
+    }
+
+    // Fill clusters
+    for (int i = 0; i < source_inode -> cluster_count; i++) {
+        (*vfs) -> inode_blocks -> items[new_inode] -> direct[i] = source_inode -> direct[i];
+    }
+
+    INODE *inode = get_inode_by_id(vfs, new_inode);
+
+    if (remove_file_from_directory(vfs, parent_inode -> nodeid, inode -> nodeid) == -1) {
+        printf("ERROR: cannot remove folder from directory");
+        return -1;
+    }
+
+    // Add inode into new folder
+    int index = get_free_dir_item_id(vfs, dest_inode);
+    int parent_cluster_id = (dest_inode -> direct[0] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
+
+    if (add_folder_to_structure(vfs, inode -> nodeid, new_filename, parent_cluster_id, index) == -1) {
+        return -1;
+    }
+    fwrite_inode_block(vfs);
+    fwrite_inode_item(vfs, new_inode);
+    return 1;
+}
+
+int move_file_into_folder (VFS **vfs, INODE *dest_inode, INODE *source_inode) {
+    char *source_file_name = get_inode_name(vfs, source_inode -> nodeid);
+    int32_t max_dir_count = ONE_CLUSTER_SIZE / sizeof(DIR_ITEM);
+
+    // Delete inode from old folder
+    INODE *parent_inode = get_parent_inode(vfs, source_inode);
+    if (parent_inode == NULL) {
+        return -1;
+    }
+
+    if (remove_file_from_directory(vfs, parent_inode -> nodeid, source_inode -> nodeid) == -1) {
+        printf("ERROR: cannot remove folder from directory");
+        return -1;
+    }
+
+    // Add inode into new folder
+    int index = get_free_dir_item_id(vfs, dest_inode);
+    int parent_cluster_id = (dest_inode -> direct[0] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
+    if (add_folder_to_structure(vfs, source_inode -> nodeid, source_file_name, parent_cluster_id, index) == -1) {
+        return -1;
+    }
+    free(source_file_name);
+    return 1;
+}
+
+INODE *get_parent_inode (VFS **vfs, INODE *inode) {
+    FILE *file;
+    file = fopen((*vfs) -> filename, "r+b");
+    if(file == NULL)
+    {
+        printf("ERROR: Cannot open file %s\n", (*vfs) -> filename);
+        return NULL;
+    }
+
+    INODE *parent_inode = NULL;
+    int32_t max_dir_count = ONE_CLUSTER_SIZE / sizeof(DIR_ITEM);
+    // Delete file from directory
+    for (int j = 0; j < (*vfs) -> inode_blocks -> size; j++) {
+        if ((*vfs) -> inode_blocks -> items[j] -> isDirectory) {
+            int32_t block_start_addr = (*vfs) -> inode_blocks -> items[j] -> direct[0];
+            for (int i = 0; i < max_dir_count; i++) {
+                int32_t dir_item_addr = block_start_addr + (sizeof(DIR_ITEM) * i); // First directory item
+                // Compare name with first dir item
+                DIR_ITEM *item = (DIR_ITEM*) malloc(sizeof(DIR_ITEM));
+                fseek(file, dir_item_addr, SEEK_SET);
+                fread(item, sizeof(DIR_ITEM), 1, file);
+
+                if (item -> inode == inode -> nodeid) {
+                    parent_inode = (*vfs) -> inode_blocks -> items[j];
+                    free(item);
+                    break;
+                }
+                free(item);
+            }
+        }
+    }
+    fclose(file);
+    return parent_inode;
 }

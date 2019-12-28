@@ -17,17 +17,12 @@
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/C.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/C.includecache" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/bitmap.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/bitmap.c.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/commands.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/commands.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/data_blocks.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/data_blocks.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/depend.internal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/depend.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/depend.make" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/inode_blocks.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/inode_blocks.c.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/main.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/main.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/superblock.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/superblock.c.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/vfs.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/vfs.c.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/ZOS" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/ZOS" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/filesystem.dat" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/filesystem.dat" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/commands.c" beforeDir="false" afterPath="$PROJECT_DIR$/commands.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data_blocks.c" beforeDir="false" afterPath="$PROJECT_DIR$/data_blocks.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/inode_blocks.c" beforeDir="false" afterPath="$PROJECT_DIR$/inode_blocks.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/main.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.h" beforeDir="false" afterPath="$PROJECT_DIR$/main.h" afterDir="false" />
@@ -46,6 +41,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/inode_blocks.c" root0="SKIP_INSPECTION" />
+  </component>
   <component name="OCFindUsagesOptions" text="false" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectId" id="1UyUiCIndGS0QZxmGa2FviwUmzi" />
   <component name="PropertiesComponent">
@@ -57,6 +55,7 @@
     <property name="node.js.path.for.package.tslint" value="project" />
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -94,7 +93,7 @@
       <workItem from="1576589900584" duration="1637000" />
       <workItem from="1576656396645" duration="21518000" />
       <workItem from="1576769672592" duration="5395000" />
-      <workItem from="1577006322995" duration="17514000" />
+      <workItem from="1577006322995" duration="36010000" />
     </task>
     <servers />
   </component>
@@ -115,6 +114,15 @@
     </option>
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/inode_blocks.c</url>
+          <line>694</line>
+          <option name="timeStamp" value="84" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <watches-manager>
       <configuration name="CMakeRunConfiguration">
         <watch expression="vfs-&gt;*vfs-&gt;inode_blocks-&gt;size" />

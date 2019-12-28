@@ -6,13 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FS_TEMP_FILE "inode.dat"
 #define SPLITTER " "
 #define COMMAND_LEN 100
 #define OK       0
 #define NO_INPUT 1
 #define TOO_LONG 2
-
 
 #define SIGNATURE "JANELLE"
 #define DESCRIPTOR "ZOS-2019"
@@ -32,9 +30,11 @@
 #define OUTCP "outcp"
 #define LOAD_COMMANDS "load"
 #define FILE_FORMATTING "format"
-#define CONTROL_KONZ "check"
+#define CHECK "check"
 #define EXIT "exit"
 #define HELP "help"
+#define SYSTEMINFO "sysinfo"
+#define TEST "test"
 
 #define ROOT_NAME "root"
 
@@ -115,14 +115,9 @@ struct directory_item {
     char item_name[12];              //8+3 + /0 C/C++ ukoncovaci string znak
 };
 
-struct the_fragment_temp {
-    int successful;
-    int32_t start_cluster_ID;
-    int count;
-};
 
 // MAIN
-void hello();
+void hello(int disk_size);
 int compare_two_string(char *string1, char *string2);
 int getLine (char *prmpt, char *buff, size_t sz);
 int get_folder_count(char *str);
@@ -147,8 +142,8 @@ void fread_bitmap(VFS **vfs, FILE *file);
 // VIRTUAL FILESYSTEM
 void vfs_init(VFS **vfs, char *filename, size_t disk_size);
 void create_vfs_file(VFS **vfs, size_t disk_size, FILE *file);
-void set_path_to_root(VFS **vfs);
 void go_to_parent_folder(VFS **vfs);
+void systeminfo(VFS **vfs);
 
 // SUPERBLOCK
 void superblock_init(SUPERBLOCK **superblock, int32_t disk_size, int32_t cluster_size);
@@ -174,6 +169,11 @@ void fwrite_inode_item(VFS **vfs, int node_id);
 void fread_inode_block(VFS **vfs, FILE *file);
 int make_file_in_inodes(VFS **vfs, char *source_name, char *dest_name, INODE *dest_inode);
 int remove_file_from_fs (VFS **vfs, INODE *inode);
+char *is_folder_contains_item (VFS **vfs, INODE *dest_inode, INODE *source_inode);
+int copy_file_in_directory(VFS **vfs, INODE *dest_inode, INODE *source_inode, char *new_filename);
+int move_file_into_folder (VFS **vfs, INODE *dest_inode, INODE *source_inode);
+INODE *get_parent_inode (VFS **vfs, INODE *inode);
+char *get_inode_name (VFS **vfs, int inode_id);
 
 // COMMANDS
 void actual_directory(VFS *vfs);
@@ -190,8 +190,9 @@ void present_working_directory();
 void inode_info(VFS **vfs, char *tok);
 void hd_to_fs(VFS **vfs, char *tok);
 void fs_to_hd(VFS **vfs, char *tok);
-int run_commands_from_file(VFS **vfs, char *tok);
-void file_format(VFS **vfs, char *tok);
+int run_commands_from_file(FILE **file, char *tok);
+void consistency_check(VFS **vfs, char *tok);
+void test(VFS **vfs, char *tok);
 void commands_help();
 
 void ls (VFS **vfs);

@@ -7,35 +7,56 @@
 
 VFS *my_vfs;
 char data_filename[] = "filesystem.dat";
+int commands = 0;
+FILE *commands_file;
 
-int main() {
+int main(int argc, char *argv[]) {
     char *command_part;
     int rc;
     char buff[COMMAND_LEN];
 
-    hello();
-    vfs_init(&my_vfs, data_filename, DISK_SIZE);
+    hello(DISK_SIZE);
+    if (argc == 1)
+    {
+        vfs_init(&my_vfs, data_filename, DISK_SIZE);
+    } else {
+        vfs_init(&my_vfs, data_filename, atoi(argv[1]));
+    }
 
     while (1) {
-        printf("\n%s ", my_vfs -> actual_path);
-        rc = getLine ("$ ", buff, sizeof(buff));
-        if (rc == NO_INPUT) {
-            printf ("\nNo input\n");
-            continue;
-        }
+        printf("\n%s $ ", my_vfs -> actual_path);
+        if (commands) {
+            fgets(buff, COMMAND_LEN, commands_file);
 
-        if (rc == TOO_LONG) {
-            printf ("Input too long [%s]\n", buff);
-            continue;
+            if (feof(commands_file) == 1) { //check end of file
+                fclose(commands_file);
+                commands = 0;
+            }
+
+            printf("%s", buff);
+        } else {
+            rc = getLine ("", buff, sizeof(buff));
+            if (rc == NO_INPUT) {
+                printf ("\nNo input\n");
+                continue;
+            }
+
+            if (rc == TOO_LONG) {
+                printf ("Input too long [%s]\n", buff);
+                continue;
+            }
         }
 
         command_part = strtok(buff, SPLITTER);
+        if (command_part == NULL) {
+            continue;
+        }
 
         if (compare_two_string(command_part, COPY_FILE) == 0) {
-//            copy_file(&vfs, tok);
+            copy_file(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, MOVE_FILE) == 0) {
-//            move_file(&vfs, tok);
+            move_file(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, REMOVE_FILE) == 0) {
             remove_file(&my_vfs, command_part);
@@ -67,14 +88,20 @@ int main() {
         else if (compare_two_string(command_part, OUTCP) == 0) {
             fs_to_hd(&my_vfs, command_part);
         }
-        else if (compare_two_string(command_part, LOAD_COMMANDS) == 0) {
-//            is_used_file = run_commands_from_file(&file_with_commands, tok);
+        else if (compare_two_string(command_part, TEST) == 0) {
+            test(&my_vfs, command_part);
         }
-        else if (compare_two_string(command_part, FILE_FORMATTING) == 0) {
-//            file_format(&vfs, tok);
+        else if (compare_two_string(command_part, LOAD_COMMANDS) == 0) {
+            commands = run_commands_from_file(&commands_file, command_part);
+        }
+        else if (compare_two_string(command_part, CHECK) == 0) {
+            consistency_check(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, HELP) == 0) {
-//            commands_help();
+            commands_help();
+        }
+        else if (compare_two_string(command_part, SYSTEMINFO) == 0) {
+            systeminfo(&my_vfs);
         }
         else if (compare_two_string(command_part, EXIT) == 0) {
             break;
@@ -87,10 +114,11 @@ int main() {
     return 0;
 }
 
-void hello() {
+void hello(int disk_size) {
     printf("+-----------------------------------+\n");
     printf("|   [I-NODE FILESYSTEM SIMULATION]  |\n");
     printf("|          [MUKANOVA ZHANEL]        |\n");
+    printf("|          [DISK SIZE: %d]          |\n", disk_size);
     printf("+-----------------------------------+\n");
 }
 

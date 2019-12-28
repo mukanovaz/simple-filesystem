@@ -1,0 +1,4 @@
+incp test.txt s1.txt
+cp s1.txt s2.txt
+info s1.txt
+info s2.txt
