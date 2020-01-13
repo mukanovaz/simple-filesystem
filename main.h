@@ -142,6 +142,7 @@ void vfs_init(VFS **vfs, char *filename, size_t disk_size);
 void create_vfs_file(VFS **vfs, size_t disk_size, FILE *file);
 void go_to_parent_folder(VFS **vfs);
 void systeminfo(VFS **vfs);
+int free_vfs (VFS **vfs);
 
 // SUPERBLOCK
 void superblock_init(SUPERBLOCK **superblock, int32_t disk_size, int32_t cluster_size);
@@ -172,6 +173,8 @@ int copy_file_in_directory(VFS **vfs, INODE *dest_inode, INODE *source_inode, ch
 int move_file_into_folder (VFS **vfs, INODE *dest_inode, INODE *source_inode);
 INODE *get_parent_inode (VFS **vfs, INODE *inode);
 char *get_inode_name (VFS **vfs, int inode_id);
+int32_t *get_address (VFS **vfs, INODE *inode);
+
 
 // COMMANDS
 void actual_directory(VFS *vfs);
@@ -189,7 +192,7 @@ void incp(VFS **vfs, char *tok);
 void outcp(VFS **vfs, char *tok);
 int run_commands_from_file(FILE **file, char *tok);
 void consistency_check(VFS **vfs, char *tok);
-void format(VFS **vfs, char *tok);
+int format(VFS **vfs, char *tok);
 void test(VFS **vfs, char *tok);
 void commands_help();
 

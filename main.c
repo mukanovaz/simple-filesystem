@@ -16,10 +16,9 @@ int main(int argc, char *argv[]) {
     int rc;
     char buff[COMMAND_LEN];
 
-    hello(DISK_SIZE);
     if (argc == 1)
     {
-        vfs_init(&my_vfs, data_filename, 600000);
+        vfs_init(&my_vfs, data_filename, DISK_SIZE);
     } else {
         vfs_init(&my_vfs, data_filename, atoi(argv[1]));
     }
@@ -29,12 +28,14 @@ int main(int argc, char *argv[]) {
         if (commands) {
             fgets(buff, COMMAND_LEN, commands_file);
 
+            // Delete \n
+            if (strlen(buff) > 0 && buff[strlen(buff) - 1] == '\n') buff[strlen(buff) - 1] = '\0';
             if (feof(commands_file) == 1) { //check end of file
                 fclose(commands_file);
                 commands = 0;
             }
 
-            printf("%s", buff);
+            printf("%s\n", buff);
         } else {
             rc = getLine ("", buff, sizeof(buff));
             if (rc == NO_INPUT) {
@@ -119,9 +120,9 @@ int main(int argc, char *argv[]) {
 
 void hello(int disk_size) {
     printf("+-----------------------------------+\n");
-    printf("|   [I-NODE FILESYSTEM SIMULATION]  |\n");
-    printf("|          [MUKANOVA ZHANEL]        |\n");
-    printf("|          [DISK SIZE: %d]          |\n", disk_size);
+    printf("    [I-NODE FILESYSTEM SIMULATION]  \n");
+    printf("           [MUKANOVA ZHANEL]        \n");
+    printf("         [DISK SIZE: %d]          \n", disk_size);
     printf("+-----------------------------------+\n");
 }
 
@@ -222,7 +223,7 @@ int32_t get_size(char *size) {
     char *units = NULL;
     long number;
 
-    if (!size || size == "") {
+    if (!size ||  strcmp(size , "") == 0 ) {
         printf("ERROR: cannot create file");
         return -1;
     }

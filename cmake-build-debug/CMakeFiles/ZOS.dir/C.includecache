@@ -6,15 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/janelle/Documents/Repository/kiv-zos/main.c
-stdio.h
--
-string.h
--
-errno.h
--
-sys/stat.h
--
+/home/janelle/Documents/Repository/kiv-zos/commands.c
 values.h
 -
 main.h

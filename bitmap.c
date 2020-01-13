@@ -2,7 +2,7 @@
 
 void bitmap_init(VFS **vfs, int32_t count) {
     (*vfs) -> bitmap = calloc(1, sizeof(BITMAP));
-    (*vfs) -> bitmap -> data = (int8_t *)malloc((*vfs) -> superblock -> cluster_count);
+    (*vfs) -> bitmap -> data = (int8_t*) malloc((*vfs) -> superblock -> cluster_count);
     (*vfs) -> bitmap -> length = count;
     for (int i = 0; i < (*vfs) -> bitmap -> length; i++) {
         (*vfs) -> bitmap -> data[i] = 0;
@@ -100,14 +100,17 @@ int32_t *get_free_clusters(VFS **vfs, int count) {
     int i, j = 0;
     int32_t *blocks = (int32_t *)malloc(sizeof(int32_t) * count);
 
-    j = 0;
-    // If blocks are not consecutive
     for (i = 1; i < (*vfs) -> bitmap -> length; i++) {
         if ((*vfs) -> bitmap -> data[i] == 0) {
             blocks[j] = i;
             j++;
-            if (j == count)
+            if (j == count) {
+                // Set blocks full
+                for (int k = 0; k < count; ++k) {
+                    (*vfs) -> bitmap -> data[blocks[k]] = 1;
+                }
                 return blocks;
+            }
         }
     }
     free(blocks);
