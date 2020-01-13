@@ -36,19 +36,17 @@
 #define SYSTEMINFO "sysinfo"
 #define TEST "test"
 
-#define ROOT_NAME "root"
-
 // ================================== [CONSTANT] ==================================
 #define DISK_SIZE 102400
 #define ONE_CLUSTER_SIZE 4096
-#define CLUSTER_COUNT 23
 #define MAX_NAME_LEN 12
 #define DIRECTORY 1
 #define MY_FILE 0
-#define MAX_DIR_COUNT 256
 #define MAX_INODE_COUNT 100
 #define MAX_DIRECT_LINKS 5
 
+
+#define MIN_FS_SIZE 2048
 #define ID_ITEM_FREE -1
 
 
@@ -62,23 +60,22 @@
 #define NE "NOT EMPTY"
 #define CCFILE "CANNOT CREATE FILE"
 
-typedef struct superblock SUPERBLOCK;
-typedef struct pseudo_inode INODE;
-typedef struct my_inode_array INODE_BLOCK;
+typedef struct my_superblock SUPERBLOCK;
+typedef struct my_inode INODE;
+typedef struct my_inode_table INODE_TABLE;
 typedef struct my_bitmap BITMAP;
 typedef struct my_vfs VFS;
-typedef struct directory_item DIR_ITEM;
+typedef struct my_directory_item DIR_ITEM;
 
 struct my_vfs {
     SUPERBLOCK *superblock;
-    INODE_BLOCK *inode_blocks;
+    INODE_TABLE *inode_table;
     BITMAP *bitmap;
-
     char *actual_path;
     char *filename;
 };
 
-struct superblock {
+struct my_superblock {
     char signature[9];              //login autora FS
     char volume_descriptor[251];    //popis vygenerovaného FS
     int32_t disk_size;              //celkova velikost VFS
@@ -89,12 +86,12 @@ struct superblock {
     int32_t data_start_address;     //adresa pocatku datovych bloku
 };
 
-struct my_inode_array {
+struct my_inode_table {
     int32_t size;
     INODE *items[MAX_INODE_COUNT];
 };
 
-struct pseudo_inode {
+struct my_inode {
     int32_t nodeid;                 //ID i-uzlu, pokud ID = ID_ITEM_FREE, je polozka volna
     int isDirectory;                //soubor, nebo adresar
     int8_t references;              //počet odkazů na i-uzel, používá se pro hardlinky
@@ -107,10 +104,10 @@ struct pseudo_inode {
 
 struct my_bitmap {
     int32_t length;
-    int data[CLUSTER_COUNT];
+    int8_t *data;
 };
 
-struct directory_item {
+struct my_directory_item {
     int32_t inode;                   // inode odpovídající souboru
     char item_name[12];              //8+3 + /0 C/C++ ukoncovaci string znak
 };
@@ -124,12 +121,12 @@ int get_folder_count(char *str);
 int get_path_array (char *path, char *array[10]);
 void removeChar(char *str, char garbage);
 int file_exists(const char *fname);
-int directory_exists(char *path);
+int32_t get_size(char *size);
 
 // BITMAP
+void bitmap_init(VFS **vfs, int32_t count);
 int32_t get_one_free_cluster(BITMAP **bitmap);
 int check_free_clusters (BITMAP **bitmap, int count);
-void bitmap_init(BITMAP **bitmap, int32_t cluster_count);
 int bitmap_contains_free_cluster(BITMAP *bitmap);
 int used_clusters(BITMAP *bitmap);
 void bitmap_info(BITMAP *bitmap);
@@ -138,6 +135,7 @@ int32_t set_one_bitmap_on_index (BITMAP **bitmap, int index);
 int32_t set_zero_bitmap_on_index (BITMAP **bitmap, int index);
 void fwrite_bitmap(VFS **vfs);
 void fread_bitmap(VFS **vfs, FILE *file);
+int32_t *get_free_clusters(VFS **vfs, int count);
 
 // VIRTUAL FILESYSTEM
 void vfs_init(VFS **vfs, char *filename, size_t disk_size);
@@ -178,7 +176,6 @@ char *get_inode_name (VFS **vfs, int inode_id);
 // COMMANDS
 void actual_directory(VFS *vfs);
 void make_directory(VFS **vfs, char *tok);
-
 void copy_file(VFS **vfs, char *tok);
 void move_file(VFS **vfs, char *tok);
 void remove_file(VFS **vfs, char *tok);
@@ -188,10 +185,11 @@ void concatenate(VFS **vfs, char *tok);
 void change_directory(VFS **vfs, char *tok);
 void present_working_directory();
 void inode_info(VFS **vfs, char *tok);
-void hd_to_fs(VFS **vfs, char *tok);
-void fs_to_hd(VFS **vfs, char *tok);
+void incp(VFS **vfs, char *tok);
+void outcp(VFS **vfs, char *tok);
 int run_commands_from_file(FILE **file, char *tok);
 void consistency_check(VFS **vfs, char *tok);
+void format(VFS **vfs, char *tok);
 void test(VFS **vfs, char *tok);
 void commands_help();
 

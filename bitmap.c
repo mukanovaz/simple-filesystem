@@ -1,10 +1,11 @@
 #include "main.h"
 
-void bitmap_init(BITMAP **bitmap, int32_t count) {
-    (*bitmap) = calloc(1, sizeof(BITMAP));
-    (*bitmap) -> length = count;
-    for (int i = 0; i < (*bitmap) -> length; i++) {
-        (*bitmap) -> data[i] = 0;
+void bitmap_init(VFS **vfs, int32_t count) {
+    (*vfs) -> bitmap = calloc(1, sizeof(BITMAP));
+    (*vfs) -> bitmap -> data = (int8_t *)malloc((*vfs) -> superblock -> cluster_count);
+    (*vfs) -> bitmap -> length = count;
+    for (int i = 0; i < (*vfs) -> bitmap -> length; i++) {
+        (*vfs) -> bitmap -> data[i] = 0;
     }
 }
 
@@ -86,10 +87,29 @@ void fwrite_bitmap(VFS **vfs) {
 
 void fread_bitmap(VFS **vfs, FILE *file) {
     (*vfs) -> bitmap = calloc(1, sizeof(BITMAP));
+    (*vfs) -> bitmap -> data = (int8_t *)malloc((*vfs) -> superblock -> cluster_count);
     (*vfs) -> bitmap -> length = (*vfs) -> superblock -> cluster_count;
     for (int i = 0; i < (*vfs) -> bitmap -> length; i++) {
         (*vfs) -> bitmap -> data[i] = 0;
     }
     fseek(file, (*vfs) -> superblock -> bitmap_start_address, SEEK_SET);
     fread((*vfs) -> bitmap -> data, sizeof(char unsigned), (*vfs) -> superblock -> cluster_count, file);
+}
+
+int32_t *get_free_clusters(VFS **vfs, int count) {
+    int i, j = 0;
+    int32_t *blocks = (int32_t *)malloc(sizeof(int32_t) * count);
+
+    j = 0;
+    // If blocks are not consecutive
+    for (i = 1; i < (*vfs) -> bitmap -> length; i++) {
+        if ((*vfs) -> bitmap -> data[i] == 0) {
+            blocks[j] = i;
+            j++;
+            if (j == count)
+                return blocks;
+        }
+    }
+    free(blocks);
+    return NULL;
 }

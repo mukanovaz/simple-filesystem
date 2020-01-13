@@ -2,6 +2,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <values.h>
 
 #include "main.h"
 
@@ -18,7 +19,7 @@ int main(int argc, char *argv[]) {
     hello(DISK_SIZE);
     if (argc == 1)
     {
-        vfs_init(&my_vfs, data_filename, DISK_SIZE);
+        vfs_init(&my_vfs, data_filename, 600000);
     } else {
         vfs_init(&my_vfs, data_filename, atoi(argv[1]));
     }
@@ -83,10 +84,10 @@ int main(int argc, char *argv[]) {
             inode_info(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, INCP) == 0) {
-            hd_to_fs(&my_vfs, command_part);
+            incp(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, OUTCP) == 0) {
-            fs_to_hd(&my_vfs, command_part);
+            outcp(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, TEST) == 0) {
             test(&my_vfs, command_part);
@@ -102,6 +103,8 @@ int main(int argc, char *argv[]) {
         }
         else if (compare_two_string(command_part, SYSTEMINFO) == 0) {
             systeminfo(&my_vfs);
+        } else if (compare_two_string(command_part, FILE_FORMATTING) == 0) {
+            format(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, EXIT) == 0) {
             break;
@@ -215,23 +218,40 @@ int file_exists(const char *fname)
     return 0;
 }
 
+int32_t get_size(char *size) {
+    char *units = NULL;
+    long number;
 
-int directory_exists(char *path) {
-    struct stat s;
-    int err = stat(path, &s);
-    if(-1 == err) {
-        if(ENOENT == errno) {
-            return 0;
-        }
-        else return 0;
+    if (!size || size == "") {
+        printf("ERROR: cannot create file");
+        return -1;
     }
-    else {
-        if(S_ISDIR(s.st_mode)) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
+
+    number = strtol(size, &units, 0);	// Convert to number
+
+    if (number == 0) {
+        printf("ERROR: cannot create file");
+        return -1;
     }
-    return 0;
+
+    if (strncmp("KB", units, 2) == 0) {			// Kilobytes
+        number *= 1000;
+    }
+    else if (strncmp("MB", units, 2) == 0) {	// Megabytes
+        number *= 1000000;
+    }
+    else if (strncmp("GB", units, 2) == 0) {	// Gigabytes
+        number *= 1000000000;
+    }
+
+    if (number < MIN_FS_SIZE) {			// If the size is not enough large
+        printf("ERROR: cannot create file");
+        return -1;
+    }
+    else if (number > INT_MAX) {	// If the size is too large
+        printf("ERROR: cannot create file");
+        return -1;
+    }
+
+    return (int32_t)number;
 }

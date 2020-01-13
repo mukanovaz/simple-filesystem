@@ -39,7 +39,7 @@ void make_directory(VFS **vfs, char *tok) {
     if (parent_inode == NULL) return;
 
     if (inode == NULL) {
-        if(inode_init(vfs, (*vfs) -> inode_blocks -> size, last, DIRECTORY, DIRECTORY, parent_inode -> nodeid) == -1) {
+        if(inode_init(vfs, (*vfs) -> inode_table -> size, last, DIRECTORY, DIRECTORY, parent_inode -> nodeid) == -1) {
             printf("ERROR: cannot create directory '%s'", last);
             return;
         }
@@ -183,7 +183,6 @@ void inode_info(VFS **vfs, char *tok) {
         // Print name
         printf("| INODE: Directory\n");
         FILE *file = fopen((*vfs)->filename, "r+b");
-        int32_t max_dir_count = ONE_CLUSTER_SIZE / sizeof(DIR_ITEM);
         int32_t block_start_addr = inode->direct[0];
 
         int32_t dir_item_addr = block_start_addr + (sizeof(DIR_ITEM) * 0);
@@ -202,17 +201,37 @@ void inode_info(VFS **vfs, char *tok) {
 
     printf("| INODE size: %d\n", inode -> file_size);
 
-    for (int i = 0; i < inode->cluster_count; i++) {
-        printf("| INODE direct[%d]: %d\n", i, inode -> direct[i]);
+    for (int i = 0; i < inode -> cluster_count; i++) {
+        if (i < MAX_DIRECT_LINKS)
+            printf("| INODE direct[%d]: %d\n", i, inode -> direct[i]);
     }
 
-    if (inode -> cluster_count <= 5) {
-      // print indirect
+    if (inode -> cluster_count > MAX_DIRECT_LINKS) {
+        int indirect_count = inode -> cluster_count - MAX_DIRECT_LINKS;
+
+        FILE *file;
+        file = fopen((*vfs) -> filename, "r+b");
+        if(file == NULL)
+        {
+            printf("ERROR: Cannot open file %s\n", (*vfs) -> filename);
+            return;
+        }
+
+        for (int i = 0; i < indirect_count; ++i) {
+            int32_t data_block_addr;
+            int32_t  item_addr = inode -> indirect1 + (sizeof(int32_t) * i);
+            // Get cluster address
+            fseek(file, item_addr, SEEK_SET);
+            fread(&data_block_addr, sizeof(int32_t), 1, file);
+            printf("| INODE indirect1[%d]: %d\n", i, data_block_addr);
+        }
+        fclose(file);
     }
+
     printf("+-----------------------------------------------------------------------------------------+\n");
 }
 
-void hd_to_fs(VFS **vfs, char *tok) {
+void incp(VFS **vfs, char *tok) {
     char *dir_name = strtok(NULL, SPLITTER);
     if (dir_name == NULL || strlen(dir_name) <= 1) {
         printf("ERROR: Invalid source path\n");
@@ -255,6 +274,7 @@ void hd_to_fs(VFS **vfs, char *tok) {
     }
 
     // Create file in pseudo FS
+    // TODO: CONTROL
     make_file_in_inodes(vfs, dir_name, last, destination);
     printf("INFO: OK");
 }
@@ -262,7 +282,7 @@ void hd_to_fs(VFS **vfs, char *tok) {
 
 void concatenate(VFS **vfs, char *tok) {
     char buffer[ONE_CLUSTER_SIZE];
-    int i, j;
+    int i;
     char *dir_name = strtok(NULL, SPLITTER);
 
     if (dir_name == NULL || strlen(dir_name) <= 1) {
@@ -285,34 +305,62 @@ void concatenate(VFS **vfs, char *tok) {
         printf("ERROR: Cannot open file %s\n", (*vfs) -> filename);
         return;
     }
-
     printf("\n");
+
     for (i = 0; i < inode -> cluster_count; i++) {
-        // TODO: add indirect
-        int cluster_id = (inode -> direct[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
-        int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
+        if (i < MAX_DIRECT_LINKS) {
+            int cluster_id = (inode -> direct[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
+            int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
 
-        fseek(file, data_block_addr, SEEK_SET);
-        if (actual_size >= ONE_CLUSTER_SIZE) {
-            fread(buffer, ONE_CLUSTER_SIZE, 1, file);
-            printf("%s", buffer);
-            actual_size -= ONE_CLUSTER_SIZE;
-        }
-        else {
-            fread(buffer, actual_size, 1, file);
-            int k;
-            for (k = 0; k < actual_size; k++) {
-                printf("%c", buffer[k]);
+            fseek(file, data_block_addr, SEEK_SET);
+            if (actual_size >= ONE_CLUSTER_SIZE) {
+                fread(buffer, ONE_CLUSTER_SIZE, 1, file);
+                printf("%s", buffer);
+                actual_size -= ONE_CLUSTER_SIZE;
             }
-            break;
+            else {
+                fread(buffer, actual_size, 1, file);
+                int k;
+                for (k = 0; k < actual_size; k++) {
+                    printf("%c", buffer[k]);
+                }
+                break;
+            }
         }
+    }
 
+    if (inode -> cluster_count > MAX_DIRECT_LINKS) {
+        int indirect_count = inode -> cluster_count - MAX_DIRECT_LINKS;
+
+        for (i = 0; i < indirect_count; i++) {
+            int32_t data_block_addr;
+            int32_t  item_addr = inode -> indirect1 + (sizeof(int32_t) * i);
+            // Get cluster address
+            fseek(file, item_addr, SEEK_SET);
+            fread(&data_block_addr, sizeof(int32_t), 1, file);
+
+            // Read
+            fseek(file, data_block_addr, SEEK_SET);
+            if (actual_size >= ONE_CLUSTER_SIZE) {
+                fread(buffer, ONE_CLUSTER_SIZE, 1, file);
+                printf("%s", buffer);
+                actual_size -= ONE_CLUSTER_SIZE;
+            }
+            else {
+                fread(buffer, actual_size, 1, file);
+                int k;
+                for (k = 0; k < actual_size; k++) {
+                    printf("%c", buffer[k]);
+                }
+                break;
+            }
+        }
     }
     printf("\n");
     fclose(file);
 }
 
-void fs_to_hd(VFS **vfs, char *tok) {
+void outcp(VFS **vfs, char *tok) {
     char *source = strtok(NULL, SPLITTER);
     if (source == NULL || strlen(source) <= 1) {
         printf("ERROR: Invalid source path\n");
@@ -353,7 +401,7 @@ void fs_to_hd(VFS **vfs, char *tok) {
     }
 
     if (inode -> file_size > 0) {
-        int i, j;
+        int i;
         int position = 0;
         char buffer[ONE_CLUSTER_SIZE];
         int32_t actual_size = inode -> file_size;
@@ -537,11 +585,11 @@ int run_commands_from_file(FILE **file, char *tok) {
 }
 
 void consistency_check(VFS **vfs, char *tok) {
-    for (int i = 0; i < (*vfs) -> inode_blocks -> size; i++) {
-        char *source_file_name = get_inode_name(vfs, (*vfs) -> inode_blocks -> items[i] -> nodeid);
-        int item_size = (*vfs) -> inode_blocks -> items[i] -> file_size;
+    for (int i = 0; i < (*vfs) -> inode_table -> size; i++) {
+        char *source_file_name = get_inode_name(vfs, (*vfs) -> inode_table -> items[i] -> nodeid);
+        int item_size = (*vfs) -> inode_table -> items[i] -> file_size;
 
-        if ((*vfs) -> inode_blocks -> items[i] -> isDirectory) {
+        if ((*vfs) -> inode_table -> items[i] -> isDirectory) {
             printf("DIRECTORY: '%s' - ", source_file_name);
         } else {
             printf("FILE: '%s' - ", source_file_name);
@@ -553,7 +601,7 @@ void consistency_check(VFS **vfs, char *tok) {
             if ((item_size % ONE_CLUSTER_SIZE) != 0) cluster_count++;
         }
 
-        if ((*vfs) -> inode_blocks -> items[i] -> cluster_count != cluster_count) {
+        if ((*vfs) -> inode_table -> items[i] -> cluster_count != cluster_count) {
             printf("NOT OK\n");
         } else {
             printf("OK\n");
@@ -582,6 +630,71 @@ void test(VFS **vfs, char *tok) {
     fwrite_inode_item(vfs, inode -> nodeid);
 }
 
+void format(VFS **vfs, char *tok) {
+    FILE *filesystem;
+    char *size = strtok(NULL, SPLITTER);
+    int32_t disk_size = get_size(size); // bytes
+    if (disk_size == -1)
+        return;
+
+    // Check file existing
+    if(!file_exists((*vfs) -> filename))
+    {
+        // Create file
+        FILE *file;
+        file = fopen((*vfs) -> filename, "wb");
+        if(file == NULL)
+        {
+            printf("ERROR: Cannot create file %s\n", (*vfs) -> filename);
+            return;
+        }
+
+        fclose(file);
+    }
+
+    // Open file
+    filesystem = fopen((*vfs) -> filename, "r+b");
+    if(filesystem == NULL)
+    {
+        printf("ERROR: Cannot open file %s\n", (*vfs) -> filename);
+        return;
+    }
+
+    // Free
+    for (int i = 0; i < (*vfs) -> bitmap -> length; i++) {
+        (*vfs) -> bitmap -> data[i] = 0;
+    }
+    for (int i = 0; i < (*vfs) -> inode_table -> size; i++) {
+        (*vfs) -> inode_table -> items[i] -> nodeid = ID_ITEM_FREE;
+        (*vfs) -> inode_table -> items[i] -> isDirectory = 0;
+        (*vfs) -> inode_table -> items[i] -> references = 0;
+        (*vfs) -> inode_table -> items[i] -> file_size = 0;
+        (*vfs) -> inode_table -> items[i] -> direct[0] = ID_ITEM_FREE;
+        (*vfs) -> inode_table -> items[i] -> direct[1] = ID_ITEM_FREE;
+        (*vfs) -> inode_table -> items[i] -> direct[2] = ID_ITEM_FREE;
+        (*vfs) -> inode_table -> items[i] -> direct[3] = ID_ITEM_FREE;
+        (*vfs) -> inode_table -> items[i] -> direct[4] = ID_ITEM_FREE;
+        (*vfs) -> inode_table -> items[i] -> indirect1 = ID_ITEM_FREE;
+        (*vfs) -> inode_table -> items[i] -> indirect2 = ID_ITEM_FREE;
+    }
+    free((*vfs) -> bitmap);
+    free((*vfs) -> inode_table);
+
+
+    // Create VFS
+    create_vfs_file(vfs, disk_size, filesystem);
+    fclose(filesystem);
+
+    // Create inode table
+    if (inode_blocks_init(vfs) == -1) {
+        return;
+    }
+
+
+}
+
+//fread_inode_block(vfs, file);
+//fread_bitmap(vfs, file);
 
 void commands_help() {
     printf("+-----------------------------------------------------------------------------------------+\n");

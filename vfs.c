@@ -65,14 +65,12 @@ void create_vfs_file(VFS **vfs, size_t disk_size, FILE *file) {
     SUPERBLOCK *superblock;
     superblock_init(&superblock, disk_size, ONE_CLUSTER_SIZE);
     (*vfs) -> superblock = superblock;
-    // Write superblock
+    // Write my_superblock
     fseek(file, 0, SEEK_SET);
     fwrite((*vfs) -> superblock, sizeof(SUPERBLOCK), 1, file);
 
     // Create bitmap
-    BITMAP *bitmap;
-    bitmap_init(&bitmap, (*vfs) -> superblock -> cluster_count);
-    (*vfs) -> bitmap = bitmap;
+    bitmap_init(vfs, (*vfs) -> superblock -> cluster_count);
     // Write bitmap
     fseek(file, (*vfs) -> superblock -> bitmap_start_address, SEEK_SET);
     fwrite((*vfs) -> bitmap -> data, sizeof(unsigned char), (*vfs) -> bitmap -> length, file);
@@ -104,6 +102,6 @@ void systeminfo(VFS **vfs) {
     printf("+-----------------------------------+\n");
     printf("              [INODEs]\n");
     printf("  INODES COUNT: %d bytes\n", MAX_INODE_COUNT);
-    printf("  INODES: [%d - not used] [%d - used]\n", MAX_INODE_COUNT - (*vfs) -> inode_blocks -> size, (*vfs) -> inode_blocks -> size);
+    printf("  INODES: [%d - not used] [%d - used]\n", MAX_INODE_COUNT - (*vfs) -> inode_table -> size, (*vfs) -> inode_table -> size);
     printf("+-----------------------------------+\n");
 }

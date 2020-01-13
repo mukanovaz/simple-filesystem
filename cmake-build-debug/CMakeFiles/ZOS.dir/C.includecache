@@ -6,20 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/home/janelle/Documents/Repository/kiv-zos/bitmap.c
-main.h
-/home/janelle/Documents/Repository/kiv-zos/main.h
-
-/home/janelle/Documents/Repository/kiv-zos/commands.c
-values.h
--
-main.h
-/home/janelle/Documents/Repository/kiv-zos/main.h
-
-/home/janelle/Documents/Repository/kiv-zos/inode_blocks.c
-main.h
-/home/janelle/Documents/Repository/kiv-zos/main.h
-
 /home/janelle/Documents/Repository/kiv-zos/main.c
 stdio.h
 -
@@ -28,6 +14,8 @@ string.h
 errno.h
 -
 sys/stat.h
+-
+values.h
 -
 main.h
 /home/janelle/Documents/Repository/kiv-zos/main.h
@@ -41,20 +29,4 @@ stdlib.h
 -
 string.h
 -
-
-/home/janelle/Documents/Repository/kiv-zos/superblock.c
-main.h
-/home/janelle/Documents/Repository/kiv-zos/main.h
-
-/home/janelle/Documents/Repository/kiv-zos/vfs.c
-stdio.h
--
-stdlib.h
--
-string.h
--
-values.h
--
-main.h
-/home/janelle/Documents/Repository/kiv-zos/main.h
 
