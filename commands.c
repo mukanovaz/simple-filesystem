@@ -85,9 +85,10 @@ void list_files_and_directories(VFS **vfs, char *tok){
         DIR_ITEM *item = (DIR_ITEM*) malloc(sizeof(DIR_ITEM));
         fseek(file, dir_item_addr, SEEK_SET);
         fread(item, sizeof(DIR_ITEM), 1, file);
+        if (item -> inode == ID_ITEM_FREE) continue;
 
         INODE *tmp = get_inode_by_id(vfs, item -> inode);
-        if (tmp == NULL) break;
+        if (tmp == NULL) continue;
         if (tmp -> isDirectory == 1) {
             printf("\t+ ");
         } else {
@@ -209,35 +210,12 @@ void inode_info(VFS **vfs, char *tok) {
 
     int32_t *address = get_address(vfs, inode);
     for (int i = 0; i < inode -> cluster_count; i++) {
-        int32_t adr = address[i];
         if (i < MAX_DIRECT_LINKS)
             printf("| INODE direct[%d]: %d\n", i, address[i]);
         else {
             printf("| INODE indirect1[%d]: %d\n", i, address[i]);
         }
     }
-//
-//    if (inode -> cluster_count > MAX_DIRECT_LINKS) {
-//        int indirect_count = inode -> cluster_count - MAX_DIRECT_LINKS;
-//
-//        FILE *file;
-//        file = fopen((*vfs) -> filename, "r+b");
-//        if(file == NULL)
-//        {
-//            printf("ERROR: Cannot open file %s\n", (*vfs) -> filename);
-//            return;
-//        }
-//
-//        for (int i = 0; i < indirect_count; ++i) {
-//            int32_t data_block_addr;
-//            int32_t  item_addr = inode -> indirect1 + (sizeof(int32_t) * i);
-//            // Get cluster address
-//            fseek(file, item_addr, SEEK_SET);
-//            fread(&data_block_addr, sizeof(int32_t), 1, file);
-//            printf("| INODE indirect1[%d]: %d\n", i, data_block_addr);
-//        }
-//        fclose(file);
-//    }
 
     printf("+-----------------------------------------------------------------------------------------+\n");
 }
@@ -615,6 +593,7 @@ int run_commands_from_file(FILE **file, char *tok) {
 
 void consistency_check(VFS **vfs, char *tok) {
     for (int i = 0; i < (*vfs) -> inode_table -> size; i++) {
+        if ((*vfs) -> inode_table -> items[i] -> nodeid == -1) continue;
         char *source_file_name = get_inode_name(vfs, (*vfs) -> inode_table -> items[i] -> nodeid);
         int item_size = (*vfs) -> inode_table -> items[i] -> file_size;
 

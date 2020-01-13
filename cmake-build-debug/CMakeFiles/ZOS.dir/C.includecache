@@ -6,9 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/janelle/Documents/Repository/kiv-zos/commands.c
-values.h
--
+/home/janelle/Documents/Repository/kiv-zos/inode_blocks.c
 main.h
 /home/janelle/Documents/Repository/kiv-zos/main.h
 

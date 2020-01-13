@@ -1,10 +1,10 @@
-incp test.txt s1.txt
+incp small.txt s1.txt
 cp s1.txt s2.txt
 info s1.txt
 info s2.txt
 mkdir a1
 cd a1
-incp test.txt s3.txt
+incp small.txt s3.txt
 mv s3.txt root
 outcp s3.txt result.txt
 ls

@@ -165,6 +165,7 @@ int remove_file_from_directory(VFS **vfs, int32_t parent_inode_id, int32_t inode
 INODE *directory_exist (VFS **vfs, char *actual_folder_name, char *new_folder_name);
 void fwrite_inode_block(VFS **vfs);
 void fwrite_inode_item(VFS **vfs, int node_id);
+void fwrite_inode_item2(VFS **vfs, INODE *inode, int id);
 void fread_inode_block(VFS **vfs, FILE *file);
 int make_file_in_inodes(VFS **vfs, char *source_name, char *dest_name, INODE *dest_inode);
 int remove_file_from_fs (VFS **vfs, INODE *inode);
