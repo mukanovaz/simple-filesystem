@@ -118,10 +118,10 @@ void hello(int disk_size);
 int compare_two_string(char *string1, char *string2);
 int getLine (char *prmpt, char *buff, size_t sz);
 int get_folder_count(char *str);
-int get_path_array (char *path, char *array[10]);
 void removeChar(char *str, char garbage);
 int file_exists(const char *fname);
 int32_t get_size(char *size);
+void my_exit (VFS **vfs);
 
 // BITMAP
 void bitmap_init(VFS **vfs, int32_t count);

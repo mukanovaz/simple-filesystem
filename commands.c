@@ -3,7 +3,6 @@
 
 
 void actual_directory(VFS *vfs) {
-
     char path[strlen(vfs -> actual_path)];
     if (strlen(vfs -> actual_path) > 0) strcpy(path, vfs -> actual_path);
     else strcpy(path, "/");
@@ -43,11 +42,15 @@ void make_directory(VFS **vfs, char *tok) {
     if (inode == NULL) {
         if(inode_init(vfs, (*vfs) -> inode_table -> size, last, DIRECTORY, DIRECTORY, parent_inode -> nodeid) == -1) {
             printf("ERROR: cannot create directory '%s'", last);
+            free(full_path);
+            free(path);
             return;
         }
         printf("OK");
     } else {
         printf("ERROR: A folder with name '%s' already exists\n", last);
+        free(full_path);
+        free(path);
         return;
     }
 }
@@ -64,6 +67,7 @@ void list_files_and_directories(VFS **vfs, char *tok){
     INODE *inode = find_inode_by_name(vfs, last);
     if (inode == NULL) {
         printf("ERROR: cannot find actual path inode\n");
+        free(str);
         return;
     }
 
@@ -85,7 +89,10 @@ void list_files_and_directories(VFS **vfs, char *tok){
         DIR_ITEM *item = (DIR_ITEM*) malloc(sizeof(DIR_ITEM));
         fseek(file, dir_item_addr, SEEK_SET);
         fread(item, sizeof(DIR_ITEM), 1, file);
-        if (item -> inode == ID_ITEM_FREE) continue;
+        if (item -> inode == ID_ITEM_FREE) {
+            free(item);
+            continue;
+        }
 
         INODE *tmp = get_inode_by_id(vfs, item -> inode);
         if (tmp == NULL) continue;
@@ -97,6 +104,7 @@ void list_files_and_directories(VFS **vfs, char *tok){
         printf("%s\n", item -> item_name);
         free(item);
     }
+    free(str);
     fclose(file);
 }
 
@@ -190,7 +198,7 @@ void inode_info(VFS **vfs, char *tok) {
         // Print name
         printf("| INODE: Directory\n");
         FILE *file = fopen((*vfs) -> filename, "r+b");
-        int32_t block_start_addr = inode->direct[0];
+        int32_t block_start_addr = inode -> direct[0];
 
         int32_t dir_item_addr = block_start_addr + (sizeof(DIR_ITEM) * 0);
         // Compare name with first dir item
@@ -247,25 +255,29 @@ void incp(VFS **vfs, char *tok) {
     strcat(full_path, "/");
     strcat(full_path, dest);
 
-    // Posledni token
     char * token, * last;
     last = token = strtok(dest, "/");
     for (;(token = strtok(NULL, "/")) != NULL; last = token);
 
-    // Cesta bez koncove slozky
     char *path = malloc(strlen(full_path));
     strcpy(path, full_path);
     path[strlen(full_path) - strlen(last)] = '\0';
 
     INODE *destination = find_directory(vfs, path);
     if (destination == NULL) {
+        free(full_path);
+        free(path);
         return;
     }
 
     if (make_file_in_inodes(vfs, dir_name, last, destination) == -1) {
         printf("ERROR: cannot import file.");
+        free(full_path);
+        free(path);
         return;
     }
+    free(full_path);
+    free(path);
     printf("INFO: OK");
 }
 
@@ -319,56 +331,6 @@ void concatenate(VFS **vfs, char *tok) {
         }
     }
     free(address);
-
-//    for (i = 0; i < inode -> cluster_count; i++) {
-//        if (i < MAX_DIRECT_LINKS) {
-//            int cluster_id = (inode -> direct[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
-//            int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
-//
-//            fseek(file, data_block_addr, SEEK_SET);
-//            if (actual_size >= ONE_CLUSTER_SIZE) {
-//                fread(buffer, ONE_CLUSTER_SIZE, 1, file);
-//                printf("%s", buffer);
-//                actual_size -= ONE_CLUSTER_SIZE;
-//            }
-//            else {
-//                fread(buffer, actual_size, 1, file);
-//                int k;
-//                for (k = 0; k < actual_size; k++) {
-//                    printf("%c", buffer[k]);
-//                }
-//                break;
-//            }
-//        }
-//    }
-//
-//    if (inode -> cluster_count > MAX_DIRECT_LINKS) {
-//        int indirect_count = inode -> cluster_count - MAX_DIRECT_LINKS;
-//
-//        for (i = 0; i < indirect_count; i++) {
-//            int32_t data_block_addr;
-//            int32_t  item_addr = inode -> indirect1 + (sizeof(int32_t) * i);
-//            // Get cluster address
-//            fseek(file, item_addr, SEEK_SET);
-//            fread(&data_block_addr, sizeof(int32_t), 1, file);
-//
-//            // Read
-//            fseek(file, data_block_addr, SEEK_SET);
-//            if (actual_size >= ONE_CLUSTER_SIZE) {
-//                fread(buffer, ONE_CLUSTER_SIZE, 1, file);
-//                printf("%s", buffer);
-//                actual_size -= ONE_CLUSTER_SIZE;
-//            }
-//            else {
-//                fread(buffer, actual_size, 1, file);
-//                int k;
-//                for (k = 0; k < actual_size; k++) {
-//                    printf("%c", buffer[k]);
-//                }
-//                break;
-//            }
-//        }
-//    }
     printf("\n");
     fclose(file);
 }
@@ -405,7 +367,6 @@ void outcp(VFS **vfs, char *tok) {
         printf("ERROR: Cannot open file %s\n", (*vfs) -> filename);
         return;
     }
-
 
     int cluster_count = inode -> cluster_count;
     char buffer[cluster_count][ONE_CLUSTER_SIZE];
@@ -498,15 +459,20 @@ void copy_file(VFS **vfs, char *tok) {
     parent = t = strtok(path, "/");
     for (;(t = strtok(NULL, "/")) != NULL; parent = t);
 
+
     INODE *source_inode = find_inode_by_name(vfs, source);
     if (source_inode == NULL) {
         printf("ERROR: cannot find inode with name '%s'", source);
+        free(full_path);
+        free(path);
         return;
     }
 
     INODE *dest_inode = find_inode_by_name(vfs, parent);
     if (dest_inode == NULL) {
         printf("ERROR: cannot find inode with name '%s'", parent);
+        free(full_path);
+        free(path);
         return;
     }
 
@@ -514,20 +480,32 @@ void copy_file(VFS **vfs, char *tok) {
     INODE *test = find_inode_by_name(vfs, new_file);
     if (test != NULL) {
         printf("ERROR: file already exist in destination directory");
+        free(full_path);
+        free(path);
         return;
     }
 
     if (source_inode -> isDirectory) {
         printf("ERROR: cannot move directory");
+        free(full_path);
+        free(path);
+        return;
     }
 
     if (!dest_inode -> isDirectory) {
         printf("ERROR: destination folder is file");
+        free(full_path);
+        free(path);
+        return;
     }
 
     if (copy_file_in_directory(vfs, dest_inode, source_inode, new_file) == -1) {
+        free(full_path);
+        free(path);
         return;
     }
+    free(full_path);
+    free(path);
     printf("INFO: OK");
 }
 

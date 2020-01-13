@@ -13,11 +13,11 @@ void vfs_init(VFS **vfs, char *filename, size_t disk_size) {
 
     // Fill filename
     (*vfs) = (VFS *) calloc(1, sizeof(VFS));
-    (*vfs)->filename = calloc(MAX_NAME_LEN, sizeof(char));
-    strcpy((*vfs)->filename, filename);
+    (*vfs) -> filename = calloc(MAX_NAME_LEN, sizeof(char));
+    strcpy((*vfs) -> filename, filename);
 
     // Actual path
-    (*vfs)->actual_path = malloc((strlen(filename) + 1) * sizeof(char));
+    (*vfs) -> actual_path = malloc((strlen(filename) + 1) * sizeof(char));
     strcpy((*vfs)->actual_path, "/root");
 
     if (file_exists((*vfs) -> filename)) {
@@ -123,4 +123,12 @@ void systeminfo(VFS **vfs) {
     printf("  INODES COUNT: %d bytes\n", MAX_INODE_COUNT);
     printf("  INODES: [%d - not used] [%d - used]\n", MAX_INODE_COUNT - (*vfs) -> inode_table -> size, (*vfs) -> inode_table -> size);
     printf("+-----------------------------------+\n");
+}
+
+void my_exit (VFS **vfs) {
+    free_vfs(vfs);
+    free((*vfs) -> filename);
+    free((*vfs) -> actual_path);
+    free((*vfs) -> superblock);
+    free((*vfs));
 }

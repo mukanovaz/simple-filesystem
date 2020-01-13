@@ -191,11 +191,11 @@ int fill_data_block_directory(VFS **vfs, int node_id, char *new_folder_name, int
         free(str);
         return -1;
     }
+    free(str);
     // Update parent structure
     int index = get_free_dir_item_id(vfs, parent_inode);
     int parent_cluster_id = (parent_inode -> direct[0] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
     if (add_folder_to_structure(vfs, node_id, new_folder_name, parent_cluster_id, index) == -1) {
-        free(str);
         return -1;
     }
     // Update bitmap
@@ -209,7 +209,7 @@ int fill_data_block_directory(VFS **vfs, int node_id, char *new_folder_name, int
     fwrite_bitmap(vfs);
     fwrite_inode_block(vfs);
     fwrite_inode_item(vfs, node_id);
-    free(str);
+
     return 1;
  }
 
@@ -321,7 +321,8 @@ void fwrite_inode_item(VFS **vfs, int node_id) {
         printf("ERROR: Cannot create file %s\n", (*vfs) -> filename);
         return;
     }
-    fseek(file, (*vfs) -> superblock -> inode_start_address + sizeof(INODE_TABLE) + (node_id * sizeof(INODE)), SEEK_SET);
+    int32_t adr = (*vfs) -> superblock -> inode_start_address + sizeof(INODE_TABLE) + (node_id * sizeof(INODE));
+    fseek(file, adr, SEEK_SET);
     fwrite((*vfs) -> inode_table -> items[node_id], sizeof(INODE), 1, file);
     fflush(file);
     fclose(file);
@@ -335,7 +336,8 @@ void fread_inode_block(VFS **vfs, FILE *file) {
     int i;
     for (i = 0; i <  MAX_INODE_COUNT; i++) {
         (*vfs) -> inode_table -> items[i] = (INODE*) malloc(sizeof(INODE));
-        fseek(file, (*vfs) -> superblock -> inode_start_address + sizeof(INODE_TABLE) + (i * sizeof(INODE)), SEEK_SET);
+        int32_t adr = (*vfs) -> superblock -> inode_start_address + sizeof(INODE_TABLE) + (i * sizeof(INODE));
+        fseek(file, adr, SEEK_SET);
         fread((*vfs) -> inode_table -> items[i], sizeof(INODE), 1, file);
     }
 }
@@ -491,6 +493,7 @@ INODE *directory_exist (VFS **vfs, char *actual_folder_name, char *new_folder_na
     }
 
     INODE *inode = find_inode_by_name(vfs, str);
+    free(str);
     // Try to find same directory name
     if (inode != NULL) {
         int32_t block_start_addr = inode -> direct[0];
@@ -504,7 +507,6 @@ INODE *directory_exist (VFS **vfs, char *actual_folder_name, char *new_folder_na
 
             if (strcmp(item -> item_name, new_folder_name) == 0) {
                 free(item);
-                free(str);
                 fclose(file);
                 return inode;
             }
@@ -512,7 +514,6 @@ INODE *directory_exist (VFS **vfs, char *actual_folder_name, char *new_folder_na
         }
     } else {
         fclose(file);
-        free(str);
         return NULL;
     }
 
@@ -665,6 +666,7 @@ int remove_directory (VFS **vfs, INODE *inode) {
         free(item);
         return -2;
     }
+    free(item);
 
     // Free data block
     int cluster_id = (inode -> direct[0] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
@@ -686,13 +688,15 @@ int remove_directory (VFS **vfs, INODE *inode) {
     set_zero_bitmap_on_index(&(*vfs) -> bitmap, cluster_id);
 
     // Free inode
+    int tmp = inode -> nodeid;
     inode -> nodeid = ID_ITEM_FREE;
+    fwrite_inode_item2(vfs, inode, tmp);
     free(inode);
     free(parent_item);
 
     fwrite_bitmap(vfs);
     fwrite_inode_block(vfs);
-    fwrite_inode_item(vfs, inode -> nodeid);
+//    fwrite_inode_item(vfs, inode -> nodeid);
     return 1;
 }
 
@@ -745,7 +749,6 @@ int make_file_in_inodes(VFS **vfs, char *source_name, char *dest_name, INODE *de
     cluster_count = (*vfs) -> inode_table -> items[new_inode] -> cluster_count;
     int32_t *address = get_address(vfs, (*vfs) -> inode_table -> items[new_inode]);
     for (int i = 0; i < cluster_count; i++) {
-        int32_t tmp = address[i];
         int cluster_id = (address[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
         int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
         fseek(file, data_block_addr, SEEK_SET);
@@ -776,6 +779,7 @@ char *is_folder_contains_item (VFS **vfs, INODE *dest_inode, INODE *source_inode
         fread(item, sizeof(DIR_ITEM), 1, file);
 
         if (item -> inode == source_inode -> nodeid) {
+            free(item);
             return item -> item_name;
         }
         free(item);
@@ -819,21 +823,16 @@ int copy_file_in_directory(VFS **vfs, INODE *dest_inode, INODE *source_inode, ch
         printf("ERROR: cannot open a file %s\n", (*vfs) -> filename);
         return -1;
     }
+
+    int32_t *address = get_address(vfs, (*vfs) -> inode_table -> items[new_inode]);
     for (int i = 0; i < cluster_count; i++) {
-        if (i < MAX_DIRECT_LINKS) {
-            int cluster_id = ((*vfs) -> inode_table -> items[new_inode] -> direct[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
-            int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
-            fseek(file, data_block_addr, SEEK_SET);
-            fwrite(buffer[i], ONE_CLUSTER_SIZE, 1, file);
-            fflush(file);
-        }
+        int cluster_id = (address[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
+        int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
+        fseek(file, data_block_addr, SEEK_SET);
+        fwrite(buffer[i], ONE_CLUSTER_SIZE, 1, file);
+        fflush(file);
     }
     fclose(file);
-
-
-//    for (int i = 0; i < source_inode -> cluster_count; i++) {
-//        (*vfs) -> inode_table -> items[new_inode] -> direct[i] = source_inode -> direct[i];
-//    }
 
     INODE *inode = get_inode_by_id(vfs, new_inode);
 

@@ -16,12 +16,7 @@ int main(int argc, char *argv[]) {
     int rc;
     char buff[COMMAND_LEN];
 
-    if (argc == 1)
-    {
-        vfs_init(&my_vfs, data_filename, DISK_SIZE);
-    } else {
-        vfs_init(&my_vfs, data_filename, atoi(argv[1]));
-    }
+    vfs_init(&my_vfs, data_filename, DISK_SIZE);
 
     while (1) {
         printf("\n%s $ ", my_vfs -> actual_path);
@@ -108,6 +103,7 @@ int main(int argc, char *argv[]) {
             format(&my_vfs, command_part);
         }
         else if (compare_two_string(command_part, EXIT) == 0) {
+            my_exit(&my_vfs);
             break;
         }
         else
