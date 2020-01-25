@@ -728,12 +728,12 @@ int make_file_in_inodes(VFS **vfs, char *source_name, char *dest_name, INODE *de
 
     // Fill clusters
     int cluster_count = (*vfs) -> inode_table -> items[new_inode] -> cluster_count;
-    char buffer[cluster_count][ONE_CLUSTER_SIZE];
+    char buffer[cluster_count][ONE_CLUSTER_SIZE + 1];
 
     for (int i = 0; i < cluster_count; i++) {
         fseek(source_file, i * ONE_CLUSTER_SIZE, SEEK_SET);
         fread(buffer[i], ONE_CLUSTER_SIZE, 1, source_file);
-        if (i == (cluster_count - 1)) buffer[i][strlen(buffer[i]) - 1] = '\0';
+        if (i == (cluster_count - 1)) buffer[i][strlen(buffer[i]) + 1] = '\0';
     }
     fclose(source_file);
 
@@ -749,9 +749,7 @@ int make_file_in_inodes(VFS **vfs, char *source_name, char *dest_name, INODE *de
     cluster_count = (*vfs) -> inode_table -> items[new_inode] -> cluster_count;
     int32_t *address = get_address(vfs, (*vfs) -> inode_table -> items[new_inode]);
     for (int i = 0; i < cluster_count; i++) {
-        int cluster_id = (address[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
-        int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
-        fseek(file, data_block_addr, SEEK_SET);
+        fseek(file, address[i], SEEK_SET);
         fwrite(buffer[i], ONE_CLUSTER_SIZE, 1, file);
         fflush(file);
     }
@@ -806,11 +804,12 @@ int copy_file_in_directory(VFS **vfs, INODE *dest_inode, INODE *source_inode, ch
         printf("ERROR: cannot open a file %s\n", (*vfs) -> filename);
         return -1;
     }
-    int cluster_count = (*vfs) -> inode_table -> items[new_inode] -> cluster_count;
-    char buffer[cluster_count][ONE_CLUSTER_SIZE];
 
+    int cluster_count = (*vfs) -> inode_table -> items[new_inode] -> cluster_count;
+    int32_t *address1 = get_address(vfs, source_inode);
+    char buffer[cluster_count][ONE_CLUSTER_SIZE];
     for (int i = 0; i < source_inode -> cluster_count; i++) {
-        fseek(source_file, source_inode -> direct[i], SEEK_SET);
+        fseek(source_file, address1[i], SEEK_SET);
         fread(buffer[i], ONE_CLUSTER_SIZE, 1, source_file);
         if (i == (cluster_count - 1)) buffer[i][strlen(buffer[i]) - 1] = '\0';
     }
@@ -824,11 +823,9 @@ int copy_file_in_directory(VFS **vfs, INODE *dest_inode, INODE *source_inode, ch
         return -1;
     }
 
-    int32_t *address = get_address(vfs, (*vfs) -> inode_table -> items[new_inode]);
+    int32_t *address2 = get_address(vfs, (*vfs) -> inode_table -> items[new_inode]);
     for (int i = 0; i < cluster_count; i++) {
-        int cluster_id = (address[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
-        int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
-        fseek(file, data_block_addr, SEEK_SET);
+        fseek(file, address2[i], SEEK_SET);
         fwrite(buffer[i], ONE_CLUSTER_SIZE, 1, file);
         fflush(file);
     }

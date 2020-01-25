@@ -187,7 +187,6 @@ void remove_empty_directory(VFS **vfs, char *tok);
 void list_files_and_directories(VFS **vfs, char *tok);
 void concatenate(VFS **vfs, char *tok);
 void change_directory(VFS **vfs, char *tok);
-void present_working_directory();
 void inode_info(VFS **vfs, char *tok);
 void incp(VFS **vfs, char *tok);
 void outcp(VFS **vfs, char *tok);

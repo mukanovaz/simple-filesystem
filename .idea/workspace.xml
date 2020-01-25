@@ -15,16 +15,12 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/commands.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/commands.c.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/inode_blocks.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/inode_blocks.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/main.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/main.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/vfs.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/ZOS.dir/vfs.c.o" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/ZOS" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/ZOS" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/filesystem.dat" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/filesystem.dat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/result.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/result.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/result.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/commands.c" beforeDir="false" afterPath="$PROJECT_DIR$/commands.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/inode_blocks.c" beforeDir="false" afterPath="$PROJECT_DIR$/inode_blocks.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/main.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.h" beforeDir="false" afterPath="$PROJECT_DIR$/main.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vfs.c" beforeDir="false" afterPath="$PROJECT_DIR$/vfs.c" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -101,6 +97,8 @@
       <workItem from="1578917801442" duration="5162000" />
       <workItem from="1578928283261" duration="8655000" />
       <workItem from="1578945741112" duration="2370000" />
+      <workItem from="1579002452886" duration="1432000" />
+      <workItem from="1579203486086" duration="4040000" />
     </task>
     <servers />
   </component>
@@ -121,15 +119,6 @@
     </option>
   </component>
   <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/inode_blocks.c</url>
-          <line>624</line>
-          <option name="timeStamp" value="17" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
     <watches-manager>
       <configuration name="CMakeRunConfiguration">
         <watch expression="vfs-&gt;*vfs-&gt;inode_blocks-&gt;size" />

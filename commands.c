@@ -312,10 +312,7 @@ void concatenate(VFS **vfs, char *tok) {
 
     int32_t *address = get_address(vfs, inode);
     for (i = 0; i < inode -> cluster_count; i++) {
-        int cluster_id = (address[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
-        int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
-
-        fseek(file, data_block_addr, SEEK_SET);
+        fseek(file, address[i], SEEK_SET);
         if (actual_size >= ONE_CLUSTER_SIZE) {
             fread(buffer, ONE_CLUSTER_SIZE, 1, file);
             printf("%s", buffer);
@@ -369,15 +366,13 @@ void outcp(VFS **vfs, char *tok) {
     }
 
     int cluster_count = inode -> cluster_count;
-    char buffer[cluster_count][ONE_CLUSTER_SIZE];
+    char buffer[cluster_count][ONE_CLUSTER_SIZE + 1];
 
     int32_t *address = get_address(vfs, inode);
     for (int i = 0; i < cluster_count; i++) {
-        int cluster_id = (address[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
-        int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
-        fseek(file, data_block_addr, SEEK_SET);
+        fseek(file, address[i], SEEK_SET);
         fread(buffer[i], ONE_CLUSTER_SIZE, 1, file);
-        if (i == (cluster_count - 1)) buffer[i][strlen(buffer[i]) - 1] = '\0';
+        if (i == (cluster_count - 1)) buffer[i][strlen(buffer[i]) + 1] = '\0';
     }
     fclose(file);
 
@@ -389,11 +384,20 @@ void outcp(VFS **vfs, char *tok) {
         return;
     }
 
+    int actual_size = inode -> file_size;
+    fseek(file_dest, 0, SEEK_SET);
     for (int i = 0; i < inode -> cluster_count; i++) {
-        int cluster_id = (address[i] - (*vfs) -> superblock -> data_start_address) / ONE_CLUSTER_SIZE;
-        int32_t data_block_addr = (*vfs) -> superblock -> data_start_address + (ONE_CLUSTER_SIZE * cluster_id);
-        fseek(file_dest, data_block_addr, SEEK_SET);
-        fwrite(buffer[i], ONE_CLUSTER_SIZE, 1, file_dest);
+        if (actual_size >= ONE_CLUSTER_SIZE) {
+            fwrite(buffer[i], ONE_CLUSTER_SIZE, 1, file_dest);
+            actual_size -= ONE_CLUSTER_SIZE;
+        }
+        else {
+            fwrite(buffer[i], actual_size, 1, file_dest);
+            fflush(file_dest);
+            fputc(0x0a, file_dest);
+            break;
+        }
+        fseek(file_dest, ONE_CLUSTER_SIZE, SEEK_SET);
         fflush(file_dest);
     }
 
